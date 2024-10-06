@@ -10,6 +10,9 @@ module.exports = {
 
   theme: {
     extend: {
+      fontFamily: {
+        jetbrains: ["JetbrainsMono"],
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

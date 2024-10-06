@@ -6,10 +6,6 @@ import "./globals.css";
 import "frosted-ui/styles.css";
 import { ThemeProvider } from "./providers";
 
-const jetbrains = localFont({
-  src: "../public/JetBrainsMonoNerdFontMono-Regular.ttf",
-});
-
 export const metadata: Metadata = {
   title: "Code Together",
   description: "Code w/ ur homies",
@@ -31,14 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={cn("antialiased", jetbrains.className)}
-      suppressHydrationWarning
-    >
-      <body>
+    <html lang="en" className={"antialiased"} suppressHydrationWarning>
+      <body className="font-jetbrains">
         <ThemeProvider>
-          <Theme>{children}</Theme>
+          <Theme>
+            <div className="font-jetbrains">{children}</div>
+          </Theme>
         </ThemeProvider>
       </body>
     </html>

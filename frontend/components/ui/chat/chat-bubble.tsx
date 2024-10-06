@@ -107,10 +107,11 @@ const ChatBubbleMessage = React.forwardRef<
     ref
   ) => (
     <Card
+      size={"1"}
       variant="surface"
       className={cn(
         chatBubbleMessageVariants({ variant, layout, className }),
-        "text-primary break-words max-w-full whitespace-pre-wrap p-0"
+        "text-primary text-sm break-words max-w-full whitespace-pre-wrap p-0"
       )}
       ref={ref}
       {...props}
