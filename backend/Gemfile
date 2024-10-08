@@ -56,3 +56,5 @@ group :development do
   gem 'rack-livereload'
 end
 gem "tailwindcss-rails", "~> 2.7"
+
+gem 'rack-cors', require: 'rack/cors'
