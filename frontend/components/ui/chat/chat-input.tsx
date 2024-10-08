@@ -8,6 +8,7 @@ interface ChatInputProps
 const ChatInput = React.forwardRef<HTMLTextAreaElement, ChatInputProps>(
   ({ className, ...props }, ref) => (
     <TextArea
+      onKeyDown={props.onKeyDown}
       value={props.value}
       placeholder={props.placeholder}
       variant="surface"
