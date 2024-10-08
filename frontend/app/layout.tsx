@@ -1,10 +1,9 @@
 import { Theme } from "frosted-ui";
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { cn } from "@/lib/utils";
 import "./globals.css";
 import "frosted-ui/styles.css";
 import { ThemeProvider } from "./providers";
+import UserProvider from "./user-provider";
 
 export const metadata: Metadata = {
   title: "Code Together",
@@ -31,7 +30,9 @@ export default function RootLayout({
       <body className="font-jetbrains">
         <ThemeProvider>
           <Theme>
-            <div className="font-jetbrains">{children}</div>
+            <UserProvider>
+              <div className="font-jetbrains">{children}</div>
+            </UserProvider>
           </Theme>
         </ThemeProvider>
       </body>
