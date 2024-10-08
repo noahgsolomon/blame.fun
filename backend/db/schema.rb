@@ -10,11 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_10_08_004059) do
+ActiveRecord::Schema[8.0].define(version: 2024_10_08_110945) do
+  create_table "environment_user_joins", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "environment_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["environment_id"], name: "index_environment_user_joins_on_environment_id"
+    t.index ["user_id"], name: "index_environment_user_joins_on_user_id"
+  end
+
+  create_table "environments", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "browser_token", null: false
   end
+
+  add_foreign_key "environment_user_joins", "environments"
+  add_foreign_key "environment_user_joins", "users"
 end
