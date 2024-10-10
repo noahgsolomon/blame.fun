@@ -3,7 +3,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "frosted-ui/styles.css";
 import { ThemeProvider } from "./providers";
-import UserProvider from "./user-provider";
+import UserProvider from "./data-provider";
+import Header from "./header";
+import EnvironmentProvider from "./environment-provider";
+import DataProvider from "./data-provider";
 
 export const metadata: Metadata = {
   title: "Code Together",
@@ -30,9 +33,12 @@ export default function RootLayout({
       <body className="font-jetbrains">
         <ThemeProvider>
           <Theme>
-            <UserProvider>
-              <div className="font-jetbrains">{children}</div>
-            </UserProvider>
+            <DataProvider>
+              <div className="font-jetbrains h-screen">
+                <Header />
+                {children}
+              </div>
+            </DataProvider>
           </Theme>
         </ThemeProvider>
       </body>
