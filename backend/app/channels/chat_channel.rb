@@ -1,9 +1,61 @@
 class ChatChannel < ApplicationCable::Channel
+  include UserFetcher
+
   def subscribed
-    # stream_from "some_channel"
+    Rails.logger.info "Attempting to subscribe with user: #{current_user&.id}"
+    Rails.logger.info "Environment ID: #{params[:environmentId]}"
+
+    if current_user.nil?
+      Rails.logger.error "Subscription rejected: Current user is nil"
+      reject
+      return
+    end
+
+    env = Environment.find_by(id: params[:environmentId])
+    if env && EnvironmentUserJoin.find_by(environment_id: env.id, user_id: current_user.id)
+      stream_from "chat_environment_#{params[:environmentId]}"
+      Rails.logger.info "Subscription accepted for user #{current_user.id} in environment #{params[:environmentId]}"
+      broadcast_user_joined
+    else
+      Rails.logger.error "Subscription rejected: User not part of environment or environment not found"
+      reject
+    end
   end
 
   def unsubscribed
-    # Any cleanup needed when channel is unsubscribed
+    broadcast_user_left
+    # Any additional cleanup needed when channel is unsubscribed
+  end
+
+  def receive(data)
+    return if @current_user.nil?
+
+    message = data['content']
+    ActionCable.server.broadcast("chat_environment_#{params[:environmentId]}", {
+      message: {
+        id: message['id'],
+        content: message['content'],
+        sender: message['sender'],
+        timestamp: message['timestamp'],
+        type: message['type']
+      },
+      user: @current_user.as_json(only: [:id, :name])
+    })
+  end
+
+  private
+
+  def broadcast_user_joined
+    ActionCable.server.broadcast("chat_environment_#{params[:environmentId]}", {
+      action: 'user_joined',
+      user: current_user.as_json(only: [:id, :name])
+    })
+  end
+
+  def broadcast_user_left
+    ActionCable.server.broadcast("chat_environment_#{params[:environmentId]}", {
+      action: 'user_left',
+      user: current_user.as_json(only: [:id, :name])
+    })
   end
 end
