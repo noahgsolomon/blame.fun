@@ -28,18 +28,16 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def receive(data)
-    return if @current_user.nil?
-
+    Rails.logger.info "Received message: #{data.inspect}"
     message = data['content']
     ActionCable.server.broadcast("chat_environment_#{params[:environmentId]}", {
       message: {
         id: message['id'],
         content: message['content'],
-        sender: message['sender'],
+        sender: current_user.as_json(only: [:id, :name, :image]),
         timestamp: message['timestamp'],
         type: message['type']
-      },
-      user: @current_user.as_json(only: [:id, :name])
+      }
     })
   end
 

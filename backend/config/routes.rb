@@ -18,3 +18,5 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "admin#index"
 end
+
+o

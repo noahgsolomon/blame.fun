@@ -72,7 +72,11 @@ export default function Chat({ environmentId }: { environmentId: string }) {
                   content: `${data.user?.name || "A user"} has ${
                     data.action === "user_joined" ? "joined" : "left"
                   } the chat`,
-                  sender: "ai",
+                  sender: {
+                    id: data.user?.id,
+                    name: data.user?.name,
+                    image: data.user?.image,
+                  },
                   timestamp: new Date().toLocaleTimeString(),
                   type: data.action,
                 };
@@ -107,7 +111,11 @@ export default function Chat({ environmentId }: { environmentId: string }) {
       const newMessage: Message = {
         id: Date.now().toString(),
         content: inputMessage,
-        sender: "user",
+        sender: {
+          id: user?.id || "",
+          name: user?.name || "",
+          image: user?.image || "",
+        },
         timestamp: new Date().toLocaleTimeString(),
         type: "message",
       };
@@ -139,7 +147,7 @@ export default function Chat({ environmentId }: { environmentId: string }) {
           className="dark:bg-muted/40"
         >
           <AnimatePresence>
-            {messages.map((message, index) => {
+            {messages?.map((message, index) => {
               return (
                 <motion.div
                   key={index}
@@ -160,18 +168,22 @@ export default function Chat({ environmentId }: { environmentId: string }) {
                 >
                   <ChatBubble
                     key={message.id}
-                    variant={message.sender === "user" ? "sent" : "received"}
+                    variant={
+                      message.sender.id === user?.id ? "sent" : "received"
+                    }
                   >
                     <ChatBubbleAvatar
                       src={
-                        message.sender === "user"
+                        message.sender.id === user?.id
                           ? user?.image
                           : "/gigachad.png"
                       }
-                      fallback={message.sender === "user" ? "US" : "🤖"}
+                      fallback={message.sender.id === user?.id ? "US" : "🤖"}
                     />
                     <ChatBubbleMessage
-                      variant={message.sender === "user" ? "sent" : "received"}
+                      variant={
+                        message.sender.id === user?.id ? "sent" : "received"
+                      }
                     >
                       {message.content}
                     </ChatBubbleMessage>

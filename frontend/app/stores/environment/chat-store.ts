@@ -3,7 +3,11 @@ import { create } from "zustand";
 export interface Message {
   id: string;
   content: string;
-  sender: "user" | "ai";
+  sender: {
+    id: string;
+    name: string;
+    image: string;
+  };
   timestamp: string;
   type?: "message" | "user_joined" | "user_left";
 }
