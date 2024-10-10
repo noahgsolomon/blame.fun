@@ -1,63 +1,118 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Bot, MessageCircle, Send } from "lucide-react";
+import { createConsumer } from "@rails/actioncable";
+import { Message, useChatStore } from "./stores/environment/chat-store";
+import { useEnvironmentStore } from "./stores/environment/environment-store";
+import { useUserStore } from "./stores/user-store";
+import {
+  ExpandableChat,
+  ExpandableChatBody,
+  ExpandableChatHeader,
+  ExpandableChatFooter,
+} from "@/components/ui/chat/expandable-chat";
+import { ChatInput } from "@/components/ui/chat/chat-input";
 import {
   ChatBubble,
   ChatBubbleAvatar,
   ChatBubbleMessage,
 } from "@/components/ui/chat/chat-bubble";
-import { ChatInput } from "@/components/ui/chat/chat-input";
-import {
-  ExpandableChat,
-  ExpandableChatHeader,
-  ExpandableChatBody,
-  ExpandableChatFooter,
-} from "@/components/ui/chat/expandable-chat";
 import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
-import { AnimatePresence, motion } from "framer-motion";
+import { MessageCircle, Send } from "lucide-react";
 import { Button } from "frosted-ui";
+import { AnimatePresence, motion } from "framer-motion";
 
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "ai";
-  timestamp: string;
-}
-
-const initialChatSupportMessages: Message[] = [
-  {
-    id: "1",
-    content: "chat to ur bros in here",
-    sender: "ai",
-    timestamp: new Date().toLocaleTimeString(),
-  },
-];
-
-export default function Chat() {
-  const [messages, setMessages] = useState<Message[]>(
-    initialChatSupportMessages
+export default function Chat({ environmentId }: { environmentId: string }) {
+  const { environments } = useEnvironmentStore();
+  const environment = environments.find(
+    (e) => e.id.toString() === environmentId
   );
+  const { user } = useUserStore();
+  const { messages, setMessages } = useChatStore();
   const [inputMessage, setInputMessage] = useState("");
-
+  const subscriptionRef = useRef<any>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop =
-        messagesContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
+    const setupWebSocket = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/websocket_auth", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const { token } = data;
+
+        const consumer = createConsumer(
+          `ws://localhost:3000/cable?token=${token}`
+        );
+
+        const subscription = consumer.subscriptions.create(
+          {
+            channel: "ChatChannel",
+            environmentId,
+          },
+          {
+            connected: () => {
+              console.log("Connected to ChatChannel");
+            },
+            received: (data: any) => {
+              console.log("Received data:", data);
+              if (
+                data.action === "user_joined" ||
+                data.action === "user_left"
+              ) {
+                const newMessage: Message = {
+                  id: Date.now().toString(),
+                  content: `${data.user?.name || "A user"} has ${
+                    data.action === "user_joined" ? "joined" : "left"
+                  } the chat`,
+                  sender: "ai",
+                  timestamp: new Date().toLocaleTimeString(),
+                  type: data.action,
+                };
+                setMessages([...messages, newMessage]);
+              } else if (data.message) {
+                setMessages([...messages, data.message]);
+              }
+            },
+            disconnected: () => {
+              console.log("Disconnected from ChatChannel");
+            },
+          }
+        );
+
+        subscriptionRef.current = subscription;
+      } catch (error) {
+        console.error("Failed to set up WebSocket:", error);
+      }
+    };
+
+    setupWebSocket();
+
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+      }
+    };
+  }, [environmentId, setMessages]);
 
   const handleSendMessage = () => {
-    if (inputMessage.trim()) {
+    if (inputMessage.trim() && subscriptionRef.current) {
       const newMessage: Message = {
         id: Date.now().toString(),
         content: inputMessage,
         sender: "user",
         timestamp: new Date().toLocaleTimeString(),
+        type: "message",
       };
-      setMessages([...messages, newMessage]);
+
+      subscriptionRef.current.send({ content: newMessage });
       setInputMessage("");
     }
   };
@@ -76,6 +131,9 @@ export default function Chat() {
       position="bottom-right"
     >
       <ExpandableChatBody>
+        <ExpandableChatHeader className="text-lg font-bold">
+          {environment ? environment.name : "Loading..."}
+        </ExpandableChatHeader>
         <ChatMessageList
           ref={messagesContainerRef}
           className="dark:bg-muted/40"
@@ -107,7 +165,7 @@ export default function Chat() {
                     <ChatBubbleAvatar
                       src={
                         message.sender === "user"
-                          ? "https://avatars.githubusercontent.com/u/111200060?v=4"
+                          ? user?.image
                           : "/gigachad.png"
                       }
                       fallback={message.sender === "user" ? "US" : "🤖"}
@@ -139,6 +197,7 @@ export default function Chat() {
             placeholder="Type a message..."
           />
           <Button
+            variant="soft"
             disabled={!inputMessage.trim()}
             style={{ cursor: "pointer" }}
             type="submit"
