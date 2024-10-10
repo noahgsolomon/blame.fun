@@ -109,6 +109,9 @@ const ChatBubbleMessage = React.forwardRef<
     <Card
       size={"1"}
       variant="surface"
+      style={{
+        backgroundColor: "hsl(var(--background))",
+      }}
       className={cn(
         chatBubbleMessageVariants({ variant, layout, className }),
         "text-primary text-sm break-words max-w-full whitespace-pre-wrap p-0"

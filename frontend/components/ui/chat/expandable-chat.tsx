@@ -67,9 +67,10 @@ const ExpandableChat: React.FC<ExpandableChatProps> = ({
       >
         {children}
         <Button
-          variant="surface"
+          variant="soft"
+          color="gray"
           style={{ cursor: "pointer" }}
-          className="absolute top-2 right-2 sm:hidden"
+          className="absolute top-3 right-6 sm:hidden"
           onClick={toggleChat}
         >
           <X className="h-4 w-4" />
@@ -127,6 +128,8 @@ const ExpandableChatToggle: React.FC<ExpandableChatToggleProps> = ({
   ...props
 }) => (
   <Button
+    variant="soft"
+    color={isOpen ? "red" : "green"}
     style={{ cursor: "pointer", borderRadius: "100px", padding: "1.4rem" }}
     onClick={toggleChat}
   >
