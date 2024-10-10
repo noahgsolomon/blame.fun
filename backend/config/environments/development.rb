@@ -70,4 +70,8 @@ Rails.application.configure do
 
   config.middleware.insert_after ActionDispatch::Static, Rack::LiveReload
 
+  # config.action_controller.perform_caching = false
+
+  # config.cache_store = :null_store
+
 end
