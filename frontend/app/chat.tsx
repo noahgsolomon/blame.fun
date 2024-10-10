@@ -80,9 +80,9 @@ export default function Chat({ environmentId }: { environmentId: string }) {
                   timestamp: new Date().toLocaleTimeString(),
                   type: data.action,
                 };
-                setMessages([...messages, newMessage]);
+                setMessages((prevMessages) => [...prevMessages, newMessage]);
               } else if (data.message) {
-                setMessages([...messages, data.message]);
+                setMessages((prevMessages) => [...prevMessages, data.message]);
               }
             },
             disconnected: () => {

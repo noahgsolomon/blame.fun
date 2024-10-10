@@ -14,13 +14,14 @@ export interface Message {
 
 interface ChatState {
   messages: Message[];
-  setMessages: (messages: Message[]) => void;
+  setMessages: (updater: (prevMessages: Message[]) => Message[]) => void;
   sendMessage: (message: string, subscription: any) => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
-  setMessages: (newMessages: Message[]) => set({ messages: newMessages }),
+  setMessages: (updater) =>
+    set((state) => ({ messages: updater(state.messages) })),
   sendMessage: (message: string, subscription: any) => {
     subscription.send({ content: message });
   },
