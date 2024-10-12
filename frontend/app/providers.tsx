@@ -4,6 +4,8 @@ import { ThemeProvider as NextThemeProvider, useTheme } from "next-themes";
 import { Theme } from "frosted-ui";
 import { ReactNode, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { ApolloProvider } from "@apollo/client";
+import client from "@/lib/apollo-client";
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -29,7 +31,7 @@ function ThemeWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-export function ThemeProvider({ children }: ThemeProviderProps) {
+export function Providers({ children }: ThemeProviderProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -42,7 +44,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   return (
     <NextThemeProvider attribute="class">
-      <ThemeWrapper>{children}</ThemeWrapper>
+      <ThemeWrapper>
+        <ApolloProvider client={client}>{children}</ApolloProvider>
+      </ThemeWrapper>
     </NextThemeProvider>
   );
 }

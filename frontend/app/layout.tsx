@@ -2,11 +2,11 @@ import { Theme } from "frosted-ui";
 import type { Metadata } from "next";
 import "./globals.css";
 import "frosted-ui/styles.css";
-import { ThemeProvider } from "./providers";
-import UserProvider from "./data-provider";
+import { Providers } from "./providers";
 import Header from "./header";
-import EnvironmentProvider from "./environment-provider";
 import DataProvider from "./data-provider";
+import client from "@/lib/apollo-client";
+import { ApolloProvider } from "@apollo/client";
 
 export const metadata: Metadata = {
   title: "Code Together",
@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={"antialiased"} suppressHydrationWarning>
       <body className="font-jetbrains">
-        <ThemeProvider>
+        <Providers>
           <Theme>
             <DataProvider>
               <div className="font-jetbrains h-screen">
@@ -40,7 +40,7 @@ export default function RootLayout({
               </div>
             </DataProvider>
           </Theme>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

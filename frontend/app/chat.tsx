@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createConsumer } from "@rails/actioncable";
 import { Message, useChatStore } from "./stores/environment/chat-store";
 import { useEnvironmentStore } from "./stores/environment/environment-store";
@@ -24,7 +24,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export default function Chat({ environmentId }: { environmentId: string }) {
   const { environments } = useEnvironmentStore();
-  const environment = environments.find(
+  const environment = environments?.find(
     (e) => e.id.toString() === environmentId
   );
   const { user } = useUserStore();
@@ -32,6 +32,17 @@ export default function Chat({ environmentId }: { environmentId: string }) {
   const [inputMessage, setInputMessage] = useState("");
   const subscriptionRef = useRef<any>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   useEffect(() => {
     const setupWebSocket = async () => {
@@ -169,24 +180,39 @@ export default function Chat({ environmentId }: { environmentId: string }) {
                   <ChatBubble
                     key={message.id}
                     variant={
-                      message.sender.id === user?.id ? "sent" : "received"
+                      message.sender.id.toString() === user?.id
+                        ? "sent"
+                        : "received"
                     }
                   >
                     <ChatBubbleAvatar
                       src={
-                        message.sender.id === user?.id
-                          ? user?.image
-                          : "/gigachad.png"
+                        message.type === "message"
+                          ? message.sender.id.toString() === user?.id
+                            ? user?.image
+                            : message.sender?.image
+                          : ""
                       }
-                      fallback={message.sender.id === user?.id ? "US" : "🤖"}
+                      fallback={"🤖"}
                     />
-                    <ChatBubbleMessage
-                      variant={
-                        message.sender.id === user?.id ? "sent" : "received"
-                      }
-                    >
-                      {message.content}
-                    </ChatBubbleMessage>
+                    <div>
+                      {message.sender.name !== user?.name && (
+                        <p className="ml-2 text-xs text-primary/60">
+                          {message.sender.name}
+                        </p>
+                      )}
+                      <ChatBubbleMessage
+                        variant={
+                          message.type !== "message"
+                            ? "received"
+                            : message.sender.id.toString() === user?.id
+                            ? "sent"
+                            : "received"
+                        }
+                      >
+                        {message.content}
+                      </ChatBubbleMessage>
+                    </div>
                   </ChatBubble>
                 </motion.div>
               );

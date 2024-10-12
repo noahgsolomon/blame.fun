@@ -3,6 +3,25 @@
 import React, { useEffect } from "react";
 import { useUserStore } from "./stores/user-store";
 import { useEnvironmentStore } from "./stores/environment/environment-store";
+import { gql, useQuery } from "@apollo/client";
+
+const GET_DATA = gql`
+  query GetData {
+    currentUser {
+      id
+      name
+      image
+      createdAt
+      updatedAt
+    }
+    environments {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
 export default function DataProvider({
   children,
@@ -11,31 +30,18 @@ export default function DataProvider({
 }) {
   const setUser = useUserStore((state) => state.setUser);
   const setEnvironments = useEnvironmentStore((state) => state.setEnvironments);
+  const { data, loading, error } = useQuery(GET_DATA);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        console.log("fetching data");
-        const [userResponse, environmentsResponse] = await Promise.all([
-          fetch("http://localhost:3000/user", {
-            credentials: "include",
-          }),
-          fetch("http://localhost:3000/environments", {
-            credentials: "include",
-          }),
-        ]);
-        const userData = await userResponse.json();
-        setUser(userData.user);
-        const environmentsData = await environmentsResponse.json();
-        console.log("environmentsData", environmentsData);
-        setEnvironments(environmentsData.environments);
-      } catch (error) {
-        console.error("Failed to fetch data", error);
-      }
+    console.log(data);
+    console.log(loading);
+    console.log(error);
+    if (data && !loading && !error) {
+      console.log(data);
+      setUser(data.currentUser);
+      setEnvironments(data.environments);
     }
-
-    fetchData();
-  }, [setUser, setEnvironments]);
+  }, [data, loading, error, setUser, setEnvironments]);
 
   return children;
 }

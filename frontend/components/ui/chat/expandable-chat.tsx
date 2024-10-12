@@ -127,18 +127,24 @@ const ExpandableChatToggle: React.FC<ExpandableChatToggleProps> = ({
   toggleChat,
   ...props
 }) => (
-  <Button
-    variant="soft"
-    color={isOpen ? "red" : "green"}
-    style={{ cursor: "pointer", borderRadius: "100px", padding: "1.4rem" }}
-    onClick={toggleChat}
-  >
-    {isOpen ? (
-      <X className="h-6 w-6" />
-    ) : (
-      icon || <MessageCircle className="h-6 w-6" />
-    )}
-  </Button>
+  <div className={cn(isOpen ? "hidden sm:block" : "", className)}>
+    <Button
+      variant="soft"
+      color={isOpen ? "red" : "green"}
+      style={{
+        cursor: "pointer",
+        borderRadius: "100px",
+        padding: "1.4rem",
+      }}
+      onClick={toggleChat}
+    >
+      {isOpen ? (
+        <X className="h-6 w-6" />
+      ) : (
+        icon || <MessageCircle className="h-6 w-6" />
+      )}
+    </Button>
+  </div>
 );
 
 ExpandableChatToggle.displayName = "ExpandableChatToggle";
