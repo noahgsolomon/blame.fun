@@ -5,7 +5,7 @@ import { Theme } from "frosted-ui";
 import { ReactNode, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { ApolloProvider } from "@apollo/client";
-import client from "@/lib/apollo-client";
+import { client, serverClient } from "@/lib/apollo-client";
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -45,7 +45,9 @@ export function Providers({ children }: ThemeProviderProps) {
   return (
     <NextThemeProvider attribute="class">
       <ThemeWrapper>
-        <ApolloProvider client={client}>{children}</ApolloProvider>
+        <ApolloProvider client={serverClient}>
+          <ApolloProvider client={client}>{children}</ApolloProvider>
+        </ApolloProvider>
       </ThemeWrapper>
     </NextThemeProvider>
   );

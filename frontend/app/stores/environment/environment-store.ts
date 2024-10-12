@@ -2,9 +2,9 @@ import { create } from "zustand";
 
 export interface Environment {
   id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
+  name?: string | null | undefined;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface EnvironmentState {

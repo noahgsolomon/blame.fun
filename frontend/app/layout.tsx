@@ -5,8 +5,7 @@ import "frosted-ui/styles.css";
 import { Providers } from "./providers";
 import Header from "./header";
 import DataProvider from "./data-provider";
-import client from "@/lib/apollo-client";
-import { ApolloProvider } from "@apollo/client";
+import { ServerDataFetcher } from "./server-data-fetcher";
 
 export const metadata: Metadata = {
   title: "Code Together",
@@ -20,22 +19,24 @@ export const metadata: Metadata = {
       en: "/",
     },
   },
-  // metadataBase: new URL("https://noahgsolomon.com"),
+  // metadataBase: new URL("https://codetogether.com"),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { data } = await ServerDataFetcher();
+
   return (
     <html lang="en" className={"antialiased"} suppressHydrationWarning>
       <body className="font-jetbrains">
         <Providers>
           <Theme>
-            <DataProvider>
+            <DataProvider data={data}>
               <div className="font-jetbrains h-screen">
-                <Header />
+                <Header user={data.currentUser || null} />
                 {children}
               </div>
             </DataProvider>

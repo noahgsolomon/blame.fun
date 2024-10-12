@@ -7,8 +7,10 @@ module UserFetcher
 
   private
 
-  def fetch_or_create_user
-    token = cookies[:browser_token]
+   def fetch_or_create_user
+    puts "Request headers: #{request.headers}"
+    puts "Browser-Token: #{request.headers["Browser-Token"]}"
+    token = cookies[:browser_token] || request.headers["Browser-Token"]
     Rails.logger.info "Fetching user with token: #{token}"
 
     if token && (user = User.find_by(browser_token: token))
@@ -17,18 +19,29 @@ module UserFetcher
     else
       new_token = SecureRandom.uuid
       random_name = RANDOM_USERNAMES.sample
-      @current_user = User.create!(browser_token: new_token, name: random_name, image: "/icon-#{rand(0..5)}.png")
+      @current_user = User.create!(
+        browser_token: new_token,
+        name: random_name,
+        image: "/icon-#{rand(0..12)}.png"
+      )
       Rails.logger.info "Created new user: #{@current_user.id} with token: #{new_token} and name: #{random_name}"
-      response.set_cookie(:browser_token, {
-        value: new_token,
-        expires: 10.years.from_now,
-        httponly: true,
-        secure: Rails.env.production?,
-        same_site: :lax,
-        path: '/'
-      })
+
+      @current_user.browser_token = new_token
+
+      # Determine if the request is from Next.js server
+       unless request.headers["X-Requested-By"] == "nextjs-server"
+        response.set_cookie(:browser_token, {
+          value: new_token,
+          expires: 10.years.from_now,
+          httponly: true,
+          secure: Rails.env.production?,
+          same_site: :lax,
+          domain: "localhost",
+          path: "/"
+        })
+       end
     end
-  end
+   end
 
   RANDOM_USERNAMES = [
     "Sussy Snake", "Sly Fox", "Mad Dog", "Inquisitive Bee", "Clever Cat", "Jolly Giraffe",

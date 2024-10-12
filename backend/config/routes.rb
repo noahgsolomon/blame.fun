@@ -17,6 +17,7 @@ Rails.application.routes.draw do
   get 'websocket_auth', to: 'websocket_auth#token'
 
   post "/graphql", to: 'graphql#execute'
+  get "user/cookie_proxy", to: "users#cookie_proxy"
 
   # Defines the root path route ("/")
   root "admin#index"

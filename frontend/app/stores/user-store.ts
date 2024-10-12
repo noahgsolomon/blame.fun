@@ -3,9 +3,9 @@ import { create } from "zustand";
 export type User = {
   id: string;
   name: string;
-  image: string;
-  created_at: string;
-  updated_at: string;
+  image?: string | null | undefined;
+  createdAt: string;
+  updatedAt: string;
 } | null;
 
 interface UserState {

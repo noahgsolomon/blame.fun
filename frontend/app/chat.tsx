@@ -189,8 +189,8 @@ export default function Chat({ environmentId }: { environmentId: string }) {
                       src={
                         message.type === "message"
                           ? message.sender.id.toString() === user?.id
-                            ? user?.image
-                            : message.sender?.image
+                            ? user?.image!
+                            : message.sender?.image!
                           : ""
                       }
                       fallback={"🤖"}

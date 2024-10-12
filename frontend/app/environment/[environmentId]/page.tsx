@@ -12,8 +12,8 @@ import { toast } from "sonner";
 type Environment = {
   id: string;
   name: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export default function Page({
