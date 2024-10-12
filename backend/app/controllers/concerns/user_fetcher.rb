@@ -17,7 +17,7 @@ module UserFetcher
     else
       new_token = SecureRandom.uuid
       random_name = RANDOM_USERNAMES.sample
-      @current_user = User.create!(browser_token: new_token, name: random_name, image: "/icon-#{rand(0..5)}.png")
+      @current_user = User.create!(browser_token: new_token, name: random_name, image: "/icon-#{rand(0..12)}.png")
       Rails.logger.info "Created new user: #{@current_user.id} with token: #{new_token} and name: #{random_name}"
       response.set_cookie(:browser_token, {
         value: new_token,
