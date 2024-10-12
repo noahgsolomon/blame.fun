@@ -23,7 +23,6 @@ export default function Page({
 }) {
   const router = useRouter();
   const [data, setData] = useState<{ environment: Environment } | null>(null);
-  const [generatingInviteLink, setGeneratingInviteLink] = useState(false);
   useEffect(() => {
     (async () => {
       const response = await fetch(
@@ -42,7 +41,6 @@ export default function Page({
   }, []);
 
   const createInviteLink = async (environmentId: string, code: string) => {
-    setGeneratingInviteLink(true);
     try {
       const response = await fetch(
         `http://localhost:3000/environments/${environmentId}/invite`,
@@ -68,8 +66,6 @@ export default function Page({
     } catch (error) {
       console.error(error);
       toast.error("Failed to generate invite link");
-    } finally {
-      setGeneratingInviteLink(false);
     }
   };
 
@@ -97,13 +93,7 @@ export default function Page({
           style={{ cursor: "pointer" }}
           className="w-full"
         >
-          {generatingInviteLink ? (
-            <Loader className="size-4 animate-spin" />
-          ) : (
-            <>
-              <Copy className="size-4" /> invite link
-            </>
-          )}
+          <Copy className="size-4" /> invite link
         </Button>
       </div>
       <Chat environmentId={params.environmentId} />
