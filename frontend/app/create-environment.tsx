@@ -19,7 +19,6 @@ export default function CreateEnvironment() {
       });
       const data = await response.json();
       if (data.environmentId) {
-        localStorage.setItem("userId", data.userId);
         router.push(`/environment/${data.environmentId}`);
       }
     } catch (error) {
@@ -39,13 +38,7 @@ export default function CreateEnvironment() {
       style={{ cursor: "pointer" }}
       className="w-full"
     >
-      {loading ? (
-        <Loader className="size-4 animate-spin" />
-      ) : (
-        <>
-          <Plus className="size-4" /> create environment
-        </>
-      )}
+      <Plus className="size-4" /> create environment
     </Button>
   );
 }

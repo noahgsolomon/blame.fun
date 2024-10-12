@@ -158,65 +158,71 @@ export default function Chat({ environmentId }: { environmentId: string }) {
           className="dark:bg-muted/40"
         >
           <AnimatePresence>
-            {messages?.map((message, index) => {
-              return (
-                <motion.div
-                  key={index}
-                  layout
-                  initial={{ opacity: 0, scale: 1, y: 10, x: 0 }}
-                  animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-                  exit={{ opacity: 0, scale: 1, y: 1, x: 0 }}
-                  transition={{
-                    opacity: { duration: 0.1 },
-                    layout: {
-                      type: "spring",
-                      bounce: 0.3,
-                      duration: index * 0.05 + 0.2,
-                    },
-                  }}
-                  style={{ originX: 0.5, originY: 0.5 }}
-                  className="flex flex-col"
-                >
-                  <ChatBubble
-                    key={message.id}
-                    variant={
-                      message.sender.id.toString() === user?.id
-                        ? "sent"
-                        : "received"
-                    }
+            {messages
+              ?.filter(
+                (message) =>
+                  message.type === "message" ||
+                  message.sender.id.toString() !== user?.id
+              )
+              .map((message, index) => {
+                return (
+                  <motion.div
+                    key={index}
+                    layout
+                    initial={{ opacity: 0, scale: 1, y: 10, x: 0 }}
+                    animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+                    exit={{ opacity: 0, scale: 1, y: 1, x: 0 }}
+                    transition={{
+                      opacity: { duration: 0.1 },
+                      layout: {
+                        type: "spring",
+                        bounce: 0.3,
+                        duration: index * 0.05 + 0.2,
+                      },
+                    }}
+                    style={{ originX: 0.5, originY: 0.5 }}
+                    className="flex flex-col"
                   >
-                    <ChatBubbleAvatar
-                      src={
-                        message.type === "message"
-                          ? message.sender.id.toString() === user?.id
-                            ? user?.image
-                            : message.sender?.image
-                          : ""
+                    <ChatBubble
+                      key={message.id}
+                      variant={
+                        message.sender.id.toString() === user?.id
+                          ? "sent"
+                          : "received"
                       }
-                      fallback={"🤖"}
-                    />
-                    <div>
-                      {message.sender.name !== user?.name && (
-                        <p className="ml-2 text-xs text-primary/60">
-                          {message.sender.name}
-                        </p>
-                      )}
-                      <ChatBubbleMessage
-                        variant={
-                          message.type !== "message"
-                            ? "received"
-                            : message.sender.id.toString() === user?.id
-                            ? "sent"
-                            : "received"
+                    >
+                      <ChatBubbleAvatar
+                        src={
+                          message.type === "message"
+                            ? message.sender.id.toString() === user?.id
+                              ? user?.image!
+                              : message.sender?.image!
+                            : ""
                         }
-                      >
-                        {message.content}
-                      </ChatBubbleMessage>
-                    </div>
-                  </ChatBubble>
-                </motion.div>
-              );
-            })}
+                        fallback={"🤖"}
+                      />
+                      <div>
+                        {message.sender.name !== user?.name && (
+                          <p className="ml-2 text-xs text-primary/60">
+                            {message.sender.name}
+                          </p>
+                        )}
+                        <ChatBubbleMessage
+                          variant={
+                            message.type !== "message"
+                              ? "received"
+                              : message.sender.id.toString() === user?.id
+                              ? "sent"
+                              : "received"
+                          }
+                        >
+                          {message.content}
+                        </ChatBubbleMessage>
+                      </div>
+                    </ChatBubble>
+                  </motion.div>
+                );
+              })}
           </AnimatePresence>
         </ChatMessageList>
       </ExpandableChatBody>

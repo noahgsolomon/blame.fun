@@ -16,7 +16,7 @@ export default function Header() {
         <DropdownMenuTrigger>
           <Avatar
             className="cursor-pointer"
-            src={user?.image}
+            src={user?.image ?? ""}
             alt="icon"
             fallback="N"
           />
