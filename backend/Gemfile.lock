@@ -127,11 +127,15 @@ GEM
     erubi (1.13.0)
     et-orbi (1.2.11)
       tzinfo
+    fiber-storage (1.0.0)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
     globalid (1.2.1)
       activesupport (>= 6.1)
+    graphql (2.3.18)
+      base64
+      fiber-storage
     i18n (1.14.6)
       concurrent-ruby (~> 1.0)
     io-console (0.7.2)
@@ -352,6 +356,7 @@ DEPENDENCIES
   brakeman
   cssbundling-rails (~> 1.4)
   debug
+  graphql
   jbuilder
   kamal
   puma (>= 5.0)
