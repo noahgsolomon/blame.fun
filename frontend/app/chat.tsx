@@ -248,6 +248,7 @@ export default function Chat({ environmentId }: { environmentId: string }) {
           />
           <Button
             variant="soft"
+            color="blue"
             disabled={!inputMessage.trim()}
             style={{ cursor: "pointer" }}
             type="submit"
