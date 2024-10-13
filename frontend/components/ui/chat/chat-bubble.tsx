@@ -3,7 +3,8 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import MessageLoading from "./message-loading";
 import { Button, ButtonProps } from "../button";
-import { Avatar, Card } from "frosted-ui";
+import { Avatar, AvatarFallback, AvatarImage } from "../avatar";
+import { Card } from "../card";
 
 // ChatBubble
 const chatBubbleVariant = cva(
@@ -65,12 +66,10 @@ const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({
   fallback,
   className,
 }) => (
-  <Avatar
-    fallback={fallback ?? ""}
-    src={src}
-    alt="img"
-    className={className}
-  ></Avatar>
+  <Avatar className={className}>
+    <AvatarImage alt="img" src={src} />
+    <AvatarFallback>{fallback ?? ""}</AvatarFallback>
+  </Avatar>
 );
 
 // ChatBubbleMessage
@@ -107,15 +106,10 @@ const ChatBubbleMessage = React.forwardRef<
     ref
   ) => (
     <Card
-      size={"1"}
-      variant="surface"
-      style={{
-        backgroundColor: "hsl(var(--background))",
-      }}
       className={cn(
         chatBubbleMessageVariants({ variant, layout, className }),
-        "text-primary text-sm break-words max-w-full whitespace-pre-wrap p-0",
-        variant === "received" && "max-w-fit"
+        "bg-blue-300 dark:bg-blue-500 dark:text-primary break-words max-w-full whitespace-pre-wrap p-2",
+        variant === "received" && "max-w-fit bg-secondary dark:bg-secondary"
       )}
       ref={ref}
       {...props}
