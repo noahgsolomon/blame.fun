@@ -1,15 +1,27 @@
 "use client";
 
-import Chat from "@/app/chat";
-import { v4 as uuid } from "uuid";
-import { Button } from "frosted-ui";
-import { Copy, Home, Loader } from "lucide-react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { v4 as uuid } from "uuid";
 import { gql, useQuery } from "@apollo/client";
-import { GetEnvironmentQuery } from "@/__generated__/graphql";
 import { toast } from "@/hooks/use-toast";
+import Chat from "@/app/chat";
+import { Copy, Home, Play, Terminal } from "lucide-react";
+import Editor from "react-simple-code-editor";
+import { highlight, languages } from "prismjs";
+import { GetEnvironmentQuery } from "@/__generated__/graphql";
+import "prismjs/components/prism-clike";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-python";
+import { Button } from "frosted-ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Page({
   params,
@@ -17,6 +29,21 @@ export default function Page({
   params: { environmentId: string };
 }) {
   const router = useRouter();
+  const [language, setLanguage] = useState("javascript");
+  const [code, setCode] = useState(`// Write your code here
+
+console.log('hi')
+
+print('hi')
+
+const hi = async () => {
+  console.log("sup")
+}
+
+hi();
+`);
+  const [terminalOutput, setTerminalOutput] = useState("");
+
   const { data, loading } = useQuery<GetEnvironmentQuery>(
     gql`
       query GetEnvironment($id: ID!) {
@@ -72,35 +99,111 @@ export default function Page({
     }
   };
 
+  const getFileExtension = (lang: string) => {
+    switch (lang) {
+      case "javascript":
+        return "js";
+      case "py":
+        return "py";
+      case "c":
+        return "c";
+      default:
+        return "txt";
+    }
+  };
+
+  const executeCode = () => {};
+
   if (!data && !loading) {
     router.push("/404");
   }
 
   if (!data) {
-    return <></>;
+    return null;
   }
 
   return (
-    <div className="flex h-[75%] items-center justify-center">
-      <div className="flex flex-col gap-2 w-[200px]">
-        <Link href={"/"}>
+    <div className="flex h-[75%] gap-4 items-center flex-col justify-center">
+      <div className="w-[600px] flex items-center justify-between mb-2">
+        <div className="text-sm font-medium text-muted-foreground">
+          file.{getFileExtension(language)}
+        </div>
+        <Select value={language} onValueChange={setLanguage}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Language" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="javascript">JavaScript</SelectItem>
+            <SelectItem value="py">Python</SelectItem>
+            <SelectItem value="c">C</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="w-[600px] overflow-hidden rounded-md border">
+        <Editor
+          value={code}
+          onValueChange={setCode}
+          padding={10}
+          highlight={(code) =>
+            highlight(
+              code,
+              language === "javascript" ? languages.js : languages.python,
+              language
+            )
+          }
+          style={{
+            fontSize: 14,
+          }}
+        />
+        <div className="flex flex-row justify-end bg-muted p-2">
           <Button
+            variant="soft"
+            style={{ cursor: "pointer" }}
             color="purple"
+            onClick={executeCode}
+          >
+            <Play className="mr-2 h-4 w-4" /> Execute
+          </Button>
+        </div>
+      </div>
+
+      <div className="w-[600px] overflow-hidden rounded-md border relative">
+        <div className="absolute top-0 left-0 bg-muted text-muted-foreground px-3 py-1 text-sm font-medium rounded-tl-md rounded-br-md">
+          Console
+        </div>
+        <div className="min-h-[100px] p-4 pt-8">
+          {/* Console output will go here */}
+        </div>
+      </div>
+
+      <div className="w-[600px] overflow-hidden rounded-md border relative">
+        <div className="absolute top-0 left-0 bg-muted text-muted-foreground px-3 py-1 text-sm font-medium rounded-tl-md rounded-br-md flex items-center">
+          <Terminal className="mr-2 h-4 w-4" />
+          Terminal
+        </div>
+        <div className="min-h-[100px] p-4 pt-8 font-mono text-sm whitespace-pre-wrap">
+          {terminalOutput}
+        </div>
+      </div>
+
+      <div className="flex gap-2 w-[400px]">
+        <Link href="/" className="flex-1">
+          <Button
             variant="soft"
             className="w-full"
             style={{ cursor: "pointer" }}
           >
-            <Home className="size-4" /> go home
+            <Home className="mr-2 h-4 w-4" /> Go Home
           </Button>
         </Link>
         <Button
-          color="blue"
           variant="soft"
+          color="blue"
           onClick={() => createInviteLink(params.environmentId, uuid())}
           style={{ cursor: "pointer" }}
-          className="w-full"
+          className="flex-1 w-full"
         >
-          <Copy className="size-4" /> invite link
+          <Copy className="mr-2 h-4 w-4" /> Invite Link
         </Button>
       </div>
       <Chat environmentId={params.environmentId} />
