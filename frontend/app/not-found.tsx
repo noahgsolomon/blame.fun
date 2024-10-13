@@ -6,7 +6,9 @@ export default function NotFound() {
     <div className="flex flex-col gap-2 h-[75%] items-center justify-center">
       404
       <Link href={"/"}>
-        <Button style={{ cursor: "pointer" }}>Return Home</Button>
+        <Button variant="soft" style={{ cursor: "pointer" }}>
+          Return Home
+        </Button>
       </Link>
     </div>
   );

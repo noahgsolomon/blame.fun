@@ -80,6 +80,7 @@ export default function Chat({ environmentId }: { environmentId: string }) {
               ) {
                 const newMessage: Message = {
                   id: Date.now().toString(),
+                  environmentId,
                   content: `${data.user?.name || "A user"} has ${
                     data.action === "user_joined" ? "joined" : "left"
                   } the chat`,
@@ -93,7 +94,10 @@ export default function Chat({ environmentId }: { environmentId: string }) {
                 };
                 setMessages((prevMessages) => [...prevMessages, newMessage]);
               } else if (data.message) {
-                setMessages((prevMessages) => [...prevMessages, data.message]);
+                setMessages((prevMessages) => [
+                  ...prevMessages,
+                  { ...data.message, environmentId },
+                ]);
               }
             },
             disconnected: () => {
@@ -127,6 +131,7 @@ export default function Chat({ environmentId }: { environmentId: string }) {
           name: user?.name || "",
           image: user?.image || "",
         },
+        environmentId,
         timestamp: new Date().toLocaleTimeString(),
         type: "message",
       };
@@ -149,10 +154,10 @@ export default function Chat({ environmentId }: { environmentId: string }) {
       size="lg"
       position="bottom-right"
     >
+      <ExpandableChatHeader className="text-lg font-bold">
+        {environment ? environment.name : "Loading..."}
+      </ExpandableChatHeader>
       <ExpandableChatBody>
-        <ExpandableChatHeader className="text-lg font-bold">
-          {environment ? environment.name : "Loading..."}
-        </ExpandableChatHeader>
         <ChatMessageList
           ref={messagesContainerRef}
           className="dark:bg-muted/40"
@@ -161,8 +166,9 @@ export default function Chat({ environmentId }: { environmentId: string }) {
             {messages
               ?.filter(
                 (message) =>
-                  message.type === "message" ||
-                  message.sender.id.toString() !== user?.id
+                  message.environmentId === environmentId &&
+                  (message.type === "message" ||
+                    message.sender.id.toString() !== user?.id)
               )
               .map((message, index) => {
                 return (

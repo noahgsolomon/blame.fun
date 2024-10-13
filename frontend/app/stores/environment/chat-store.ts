@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 export interface Message {
   id: string;
+  environmentId: string;
   content: string;
   sender: {
     id: string;
