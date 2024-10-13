@@ -9,7 +9,6 @@ Rails.application.routes.draw do
   get "user", to: "users#index"
 
   post 'environments', to: 'environments#create'
-  get 'environments/:environmentId', to: 'environments#show'
   get 'environments', to: 'environments#index'
   post 'environments/:code/join', to: 'environments#join'
   post 'environments/:environmentId/invite', to: 'environments#create_invite'

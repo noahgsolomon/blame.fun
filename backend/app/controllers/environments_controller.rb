@@ -8,20 +8,6 @@ class EnvironmentsController < ApplicationController
     render json: { environments: environments }
   end
 
-  def show
-    Rails.logger.info "Showing environment for user: #{@current_user.id}"
-    if Environment.find_by(id: params[:environmentId]).nil?
-        render json: { status: 404 }
-    else
-      if EnvironmentUserJoin.find_by(user_id: @current_user.id, environment_id: params[:environmentId]).nil?
-        render json: { status: 404 }
-      else
-        environment = Environment.find_by(id: params[:environmentId])
-        render json: { environment: environment, userId: @current_user.id }
-      end
-    end
-  end
-
   def create
     Rails.logger.info "Creating environment for user: #{@current_user.id}"
     environment = Environment.create(name: generate_random_name)
