@@ -7,14 +7,9 @@ import { Copy, Home, Loader } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
-
-type Environment = {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-};
+import { gql, useQuery } from "@apollo/client";
+import { GetEnvironmentQuery } from "@/__generated__/graphql";
+import { toast } from "@/hooks/use-toast";
 
 export default function Page({
   params,
@@ -22,23 +17,19 @@ export default function Page({
   params: { environmentId: string };
 }) {
   const router = useRouter();
-  const [data, setData] = useState<{ environment: Environment } | null>(null);
-  useEffect(() => {
-    (async () => {
-      const response = await fetch(
-        `http://localhost:3000/environments/${params.environmentId}`,
-        {
-          credentials: "include",
+  const { data, loading } = useQuery<GetEnvironmentQuery>(
+    gql`
+      query GetEnvironment($id: ID!) {
+        environment(id: $id) {
+          id
+          name
+          createdAt
+          updatedAt
         }
-      );
-      const data = await response.json();
-      if (data.status === 404) {
-        router.push("/404");
-      } else {
-        setData(data);
       }
-    })();
-  }, []);
+    `,
+    { variables: { id: params.environmentId } }
+  );
 
   const createInviteLink = async (environmentId: string, code: string) => {
     try {
@@ -56,18 +47,34 @@ export default function Page({
 
       const data = await response.json();
       if (data.status === 404) {
-        toast.error("Failed to generate invite link");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "Failed to generate invite link",
+          variant: "destructive",
+        });
       } else {
         if (data.status === "created") {
           navigator.clipboard.writeText(`http://localhost:3001/invite/${code}`);
-          toast.success("Copied to clipboard");
+          toast({
+            title: "Copied to clipboard",
+            description: `http://localhost:3001/invite/${code}`,
+            variant: "success",
+          });
         }
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to generate invite link");
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Failed to generate invite link",
+        variant: "destructive",
+      });
     }
   };
+
+  if (!data && !loading) {
+    router.push("/404");
+  }
 
   if (!data) {
     return <></>;

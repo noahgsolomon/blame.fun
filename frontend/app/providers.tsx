@@ -3,9 +3,9 @@
 import { ThemeProvider as NextThemeProvider, useTheme } from "next-themes";
 import { Theme } from "frosted-ui";
 import { ReactNode, useEffect, useState } from "react";
-import { Toaster } from "@/components/ui/sonner";
 import { ApolloProvider } from "@apollo/client";
 import client from "@/lib/apollo-client";
+import { Toaster } from "@/components/ui/toaster";
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -26,7 +26,7 @@ function ThemeWrapper({ children }: { children: ReactNode }) {
       dangerColor="red"
     >
       {children}
-      <Toaster richColors position="top-center" />
+      <Toaster />
     </Theme>
   );
 }
