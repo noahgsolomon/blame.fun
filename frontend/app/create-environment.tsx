@@ -1,10 +1,10 @@
 "use client";
 
+import { toast } from "@/hooks/use-toast";
 import { Button } from "frosted-ui";
 import { Loader, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
 
 export default function CreateEnvironment() {
   const router = useRouter();
@@ -23,7 +23,10 @@ export default function CreateEnvironment() {
       }
     } catch (error) {
       console.error("Failed to create environment", error);
-      toast.error(`Internal server error`);
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with your request.",
+      });
     } finally {
       setLoading(false);
     }

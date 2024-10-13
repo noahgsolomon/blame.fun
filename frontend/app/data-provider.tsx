@@ -3,7 +3,8 @@
 import React, { useEffect } from "react";
 import { useUserStore } from "./stores/user-store";
 import { useEnvironmentStore } from "./stores/environment/environment-store";
-import { GetDataQuery, useGetDataQuery } from "@/graphql/graphql";
+import { gql, useQuery } from "@apollo/client";
+import { GetDataQuery } from "@/__generated__/graphql";
 
 export default function DataProvider({
   children,
@@ -13,7 +14,23 @@ export default function DataProvider({
   const setUser = useUserStore((state) => state.setUser);
   const setEnvironments = useEnvironmentStore((state) => state.setEnvironments);
 
-  const { data, loading } = useGetDataQuery();
+  const { data, loading } = useQuery<GetDataQuery>(gql`
+    query GetData {
+      currentUser {
+        id
+        name
+        image
+        createdAt
+        updatedAt
+      }
+      environments {
+        id
+        name
+        createdAt
+        updatedAt
+      }
+    }
+  `);
 
   useEffect(() => {
     if (data?.currentUser) {
