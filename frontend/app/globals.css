@@ -94,7 +94,7 @@ h1 {
 }
 
 .npm__react-simple-code-editor__textarea {
-  @apply focus:outline-none;
+  @apply focus:outline-none overflow-y-auto;
 }
 
 
