@@ -10,7 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_10_10_030337) do
+ActiveRecord::Schema[8.0].define(version: 2024_10_15_223950) do
+  create_table "environment_files", force: :cascade do |t|
+    t.integer "environment_id", null: false
+    t.string "filename"
+    t.text "content"
+    t.string "file_extension"
+    t.integer "file_size"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["environment_id"], name: "index_environment_files_on_environment_id"
+  end
+
   create_table "environment_user_joins", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "environment_id", null: false
@@ -42,6 +53,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_10_10_030337) do
     t.string "image"
   end
 
+  add_foreign_key "environment_files", "environments"
   add_foreign_key "environment_user_joins", "environments"
   add_foreign_key "environment_user_joins", "users"
   add_foreign_key "invites", "environments"
