@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { v4 as uuid } from "uuid";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useQuery, useMutation } from "@apollo/client";
 import { toast } from "@/hooks/use-toast";
 import Chat from "@/app/chat";
 import {
@@ -14,14 +14,16 @@ import {
   Terminal,
   Folder,
   File as FileIcon,
+  Check,
+  X,
+  Trash,
 } from "lucide-react";
 import Editor from "react-simple-code-editor";
 import { highlight, languages } from "prismjs";
-import { GetEnvironmentQuery } from "@/__generated__/graphql";
+import { EnvironmentFile, GetEnvironmentQuery } from "@/__generated__/graphql";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-python";
-import { Button } from "frosted-ui";
 import {
   Select,
   SelectContent,
@@ -29,19 +31,98 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tree,
-  Folder as TreeFolder,
-  File,
-  CollapseButton,
-  TreeViewElement,
-} from "@/components/ui/file-tree";
+import { Tree, Folder as TreeFolder, File } from "@/components/ui/file-tree";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "frosted-ui";
+
+const GET_ENVIRONMENT = gql`
+  query GetEnvironment($id: ID!) {
+    environment(id: $id) {
+      id
+      name
+      createdAt
+      updatedAt
+      environmentFiles {
+        id
+        environmentId
+        filename
+        content
+        fileExtension
+        fileSize
+        updatedAt
+        createdAt
+      }
+    }
+  }
+`;
+
+const RENAME_FILE = gql`
+  mutation RenameFile($id: ID!, $filename: String!) {
+    renameEnvironmentFile(id: $id, filename: $filename) {
+      environmentFile {
+        id
+        filename
+      }
+      errors
+    }
+  }
+`;
+
+const DELETE_FILE = gql`
+  mutation DeleteFile($id: ID!) {
+    deleteEnvironmentFile(id: $id) {
+      id
+      errors
+    }
+  }
+`;
+
+const CREATE_INVITE_LINK = gql`
+  mutation CreateInviteLink($environmentId: ID!, $code: String!) {
+    createInviteLink(environmentId: $environmentId, code: $code) {
+      invite {
+        id
+        code
+        environmentId
+      }
+      errors
+    }
+  }
+`;
+
+const ADD_NEW_FILE = gql`
+  mutation AddNewFile(
+    $environmentId: ID!
+    $filename: String!
+    $content: String!
+    $fileExtension: String!
+  ) {
+    addNewFile(
+      environmentId: $environmentId
+      filename: $filename
+      content: $content
+      fileExtension: $fileExtension
+    ) {
+      id
+      errors
+    }
+  }
+`;
 
 export default function Page({
   params,
@@ -49,61 +130,63 @@ export default function Page({
   params: { environmentId: string };
 }) {
   const router = useRouter();
-  const [files, setFiles] = useState<{
-    [key: string]: { language: string; content: string };
-  }>({
-    "main.js": {
-      language: "javascript",
-      content: '// Write your code here\n\nconsole.log("Hello, World!");',
-    },
-  });
-  const [currentFile, setCurrentFile] = useState("main.js");
+  const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [terminalOutput, setTerminalOutput] = useState("");
+  const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
+  const [newFileName, setNewFileName] = useState("");
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [renameFileId, setRenameFileId] = useState<string | null>(null);
+  const [newFileNameForRename, setNewFileNameForRename] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteFileId, setDeleteFileId] = useState<string | null>(null);
 
-  const { data, loading } = useQuery<GetEnvironmentQuery>(
-    gql`
-      query GetEnvironment($id: ID!) {
-        environment(id: $id) {
-          id
-          name
-          createdAt
-          updatedAt
-        }
-      }
-    `,
-    { variables: { id: params.environmentId } }
+  const { data, loading, refetch } = useQuery<GetEnvironmentQuery>(
+    GET_ENVIRONMENT,
+    {
+      variables: { id: params.environmentId },
+    }
   );
+
+  const [renameFileMutation] = useMutation(RENAME_FILE);
+  const [deleteFileMutation] = useMutation(DELETE_FILE);
+  const [createInviteLinkMutation] = useMutation(CREATE_INVITE_LINK);
+  const [addNewFileMutation] = useMutation(ADD_NEW_FILE);
+
+  useEffect(() => {
+    if (
+      data?.environment?.environmentFiles &&
+      data.environment.environmentFiles.length > 0
+    ) {
+      const firstFile = data.environment.environmentFiles[0];
+      if (firstFile && !currentFile) {
+        console.log("Setting initial file:", firstFile.filename);
+        setCurrentFile(firstFile.id);
+      }
+    }
+  }, [data, currentFile]);
 
   const createInviteLink = async (environmentId: string, code: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:3000/environments/${environmentId}/invite`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ invite: { code } }),
-        }
-      );
+      const result = await createInviteLinkMutation({
+        variables: { environmentId, code },
+      });
+      console.log("Result:", result);
 
-      const data = await response.json();
-      if (data.status === 404) {
+      if (result.data?.createInviteLink.invite) {
+        navigator.clipboard.writeText(
+          `http://localhost:3001/invite/${result.data.createInviteLink.invite.code}`
+        );
+        toast({
+          title: "Copied to clipboard",
+          description: `http://localhost:3001/invite/${code}`,
+          variant: "success",
+        });
+      } else if (result.data?.createInviteLink.errors) {
         toast({
           title: "Uh oh! Something went wrong.",
           description: "Failed to generate invite link",
           variant: "destructive",
         });
-      } else {
-        if (data.status === "created") {
-          navigator.clipboard.writeText(`http://localhost:3001/invite/${code}`);
-          toast({
-            title: "Copied to clipboard",
-            description: `http://localhost:3001/invite/${code}`,
-            variant: "success",
-          });
-        }
       }
     } catch (error) {
       console.error(error);
@@ -129,143 +212,222 @@ export default function Page({
   };
 
   const executeCode = () => {
-    setTerminalOutput(
-      `Executing ${currentFile}...\n> ${files[currentFile].content}\n\nOutput:\n...`
-    );
+    // Implement code execution logic here
   };
 
-  const addNewFile = (parentFolder: string = "") => {
-    const newFileName = `newFile${Object.keys(files).length + 1}.js`;
-    setFiles((prev) => ({
-      ...prev,
-      [newFileName]: { language: "javascript", content: "// New file" },
-    }));
-  };
-
-  const renameFile = (oldName: string, newName: string) => {
-    setFiles((prev) => {
-      const { [oldName]: fileToRename, ...rest } = prev;
-      return { ...rest, [newName]: fileToRename };
-    });
-    if (currentFile === oldName) {
-      setCurrentFile(newName);
+  const addNewFile = async () => {
+    if (newFileName) {
+      try {
+        const result = await addNewFileMutation({
+          variables: {
+            environmentId: params.environmentId,
+            filename: newFileName,
+            content: "",
+            fileExtension: getFileExtension(newFileName.split(".").pop() || ""),
+          },
+        });
+        console.log("Result:", result);
+        if (result.data?.addNewFile.id) {
+          await refetch();
+          setCurrentFile(result.data.addNewFile.id);
+          toast({
+            title: "File created",
+            description: `${newFileName} has been created successfully.`,
+          });
+        } else if (result.data?.addNewFile.errors) {
+          toast({
+            title: "Uh oh! Something went wrong.",
+            description: "Failed to create new file",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error creating file:", error);
+        toast({
+          title: "Error",
+          description: "Failed to create new file. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
+    setIsNewFileDialogOpen(false);
+    setNewFileName("");
   };
 
-  const deleteFile = (fileName: string) => {
-    setFiles((prev) => {
-      const { [fileName]: _, ...rest } = prev;
-      return rest;
-    });
-    if (currentFile === fileName) {
-      setCurrentFile(Object.keys(files)[0]);
+  const renameFile = async () => {
+    if (renameFileId && newFileNameForRename) {
+      try {
+        console.log("Renaming file:", renameFileId, newFileNameForRename);
+        await renameFileMutation({
+          variables: { id: renameFileId, filename: newFileNameForRename },
+        });
+        await refetch();
+        toast({
+          title: "File renamed",
+          description: `File has been renamed to ${newFileNameForRename}.`,
+        });
+      } catch (error) {
+        console.error("Error renaming file:", error);
+        toast({
+          title: "Error",
+          description: "Failed to rename file. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
+    setIsRenameDialogOpen(false);
+    setRenameFileId(null);
+    setNewFileNameForRename("");
+  };
+
+  const deleteFile = async () => {
+    if (deleteFileId) {
+      try {
+        const result = await deleteFileMutation({
+          variables: { id: deleteFileId },
+        });
+        if (result.data?.deleteEnvironmentFile.id) {
+          await refetch();
+          if (currentFile === deleteFileId) {
+            setCurrentFile(null);
+          }
+          toast({
+            title: "File deleted",
+            description: "File has been deleted successfully.",
+          });
+        } else {
+          throw new Error("Failed to delete file");
+        }
+      } catch (error) {
+        console.error("Error deleting file:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete file. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+    setIsDeleteDialogOpen(false);
+    setDeleteFileId(null);
   };
 
   const updateFileContent = (content: string) => {
-    setFiles((prev) => ({
-      ...prev,
-      [currentFile]: { ...prev[currentFile], content },
-    }));
+    // Implement file content update logic here
   };
 
   const updateFileLanguage = (language: string) => {
-    setFiles((prev) => ({
-      ...prev,
-      [currentFile]: { ...prev[currentFile], language },
-    }));
+    // Implement file language update logic here
   };
 
   const FileTreeItem = useCallback(
-    ({ filename }: { filename: string }) => (
+    ({ file }: { file: EnvironmentFile }) => (
       <ContextMenu>
-        <ContextMenuTrigger>
-          <File value={filename} onClick={() => setCurrentFile(filename)}>
-            {filename}
-          </File>
+        <ContextMenuTrigger
+          onClick={() => {
+            console.log("File clicked:", file.filename);
+            setCurrentFile(file.id);
+          }}
+        >
+          <File value={file.id}>{file.filename}</File>
         </ContextMenuTrigger>
-        <ContextMenuContent>
+        <ContextMenuContent className="cursor-pointer">
           <ContextMenuItem
             className="cursor-pointer"
-            onSelect={() => addNewFile()}
+            onSelect={() => {
+              console.log("Add File selected");
+              setIsNewFileDialogOpen(true);
+            }}
           >
-            New File
+            Add File
           </ContextMenuItem>
           <ContextMenuItem
             className="cursor-pointer"
             onSelect={() => {
-              const newName = prompt("Enter new file name:", filename);
-              if (newName) renameFile(filename, newName);
+              console.log("Rename File selected:", file.filename);
+              setRenameFileId(file.id);
+              setNewFileNameForRename(file.filename || "");
+              setIsRenameDialogOpen(true);
             }}
           >
             Rename
           </ContextMenuItem>
           <ContextMenuItem
             className="cursor-pointer"
-            onSelect={() => deleteFile(filename)}
+            onSelect={() => {
+              console.log("Delete File selected:", file.filename);
+              setDeleteFileId(file.id);
+              setIsDeleteDialogOpen(true);
+            }}
           >
             Delete
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
     ),
-    [files]
+    [
+      setIsNewFileDialogOpen,
+      setIsRenameDialogOpen,
+      setIsDeleteDialogOpen,
+      setCurrentFile,
+    ]
   );
-
-  const fileTreeElements: TreeViewElement[] = [
-    {
-      id: "root",
-      name: "Project",
-      children: Object.keys(files).map((filename) => ({
-        id: filename,
-        name: filename,
-        isSelectable: true,
-      })),
-    },
-  ];
 
   if (!data && !loading) {
     router.push("/404");
   }
 
-  if (!data) {
+  if (!data || !data.environment || !data.environment.environmentFiles) {
     return null;
   }
+
+  const files = data.environment.environmentFiles.reduce((acc, file) => {
+    if (file) {
+      acc[file.id] = file;
+    }
+    return acc;
+  }, {} as Record<string, NonNullable<GetEnvironmentQuery["environment"]>["environmentFiles"][number]>);
+
+  const currentFileData = currentFile ? files[currentFile] : null;
+
+  console.log("Current file:", currentFileData?.filename);
 
   return (
     <div className="flex h-[75%] gap-4 items-start justify-center">
       <div className="w-[200px] h-full overflow-auto ">
-        <ContextMenu>
-          <ContextMenuTrigger>
-            <Tree elements={fileTreeElements}>
-              <TreeFolder element="Project" value="root">
-                {Object.keys(files).map((filename) => (
-                  <FileTreeItem key={filename} filename={filename} />
-                ))}
-              </TreeFolder>
-            </Tree>
-          </ContextMenuTrigger>
-          <ContextMenuContent>
-            <ContextMenuItem onSelect={() => addNewFile()}>
-              New File
-            </ContextMenuItem>
-          </ContextMenuContent>
-        </ContextMenu>
+        <Tree
+          elements={[
+            {
+              id: "root",
+              name: "Project",
+              children: Object.values(files).map((file) => ({
+                id: file.id,
+                name: file.filename || "",
+                isSelectable: true,
+              })),
+            },
+          ]}
+        >
+          <TreeFolder element="Project" value="root">
+            {Object.values(files).map((file) => (
+              <FileTreeItem key={file.id} file={file} />
+            ))}
+          </TreeFolder>
+        </Tree>
       </div>
       <div className="flex flex-col gap-4">
         <div className="w-[600px] flex items-center justify-between mb-2">
           <div className="text-sm font-medium text-muted-foreground">
-            {currentFile}
+            {currentFileData?.filename}
           </div>
           <Select
-            value={files[currentFile].language}
-            onValueChange={updateFileLanguage}
+            value={currentFileData?.fileExtension || ""}
+            onValueChange={(value) => updateFileLanguage(value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select Language" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="javascript">JavaScript</SelectItem>
+              <SelectItem value="js">JavaScript</SelectItem>
               <SelectItem value="py">Python</SelectItem>
               <SelectItem value="c">C</SelectItem>
             </SelectContent>
@@ -273,16 +435,16 @@ export default function Page({
         </div>
         <div className="w-[600px] rounded-md border">
           <Editor
-            value={files[currentFile].content}
+            value={currentFileData?.content || ""}
             onValueChange={updateFileContent}
             padding={10}
             highlight={(code) =>
               highlight(
                 code,
-                files[currentFile].language === "javascript"
+                currentFileData?.fileExtension === "js"
                   ? languages.js
                   : languages.python,
-                files[currentFile].language
+                currentFileData?.fileExtension || "js"
               )
             }
             style={{
@@ -342,6 +504,101 @@ export default function Page({
         </div>
       </div>
       <Chat environmentId={params.environmentId} />
+
+      <Dialog open={isNewFileDialogOpen} onOpenChange={setIsNewFileDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New File</DialogTitle>
+            <DialogDescription>
+              Enter the name for your new file.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={addNewFile}>
+              Add File
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename File</DialogTitle>
+            <DialogDescription>
+              Enter the new name for your file.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={newFileNameForRename}
+                onChange={(e) => setNewFileNameForRename(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              color="blue"
+              style={{ cursor: "pointer", padding: "0.4rem" }}
+              variant="soft"
+              onClick={renameFile}
+            >
+              <Check className="mr-2 h-4 w-4" />
+              Rename
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete File</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this file? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="soft"
+              color="gray"
+              style={{ cursor: "pointer", padding: "0.4rem" }}
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="soft"
+              color="red"
+              style={{ cursor: "pointer", padding: "0.4rem" }}
+              onClick={deleteFile}
+            >
+              <Trash className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
