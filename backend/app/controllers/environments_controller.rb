@@ -12,6 +12,8 @@ class EnvironmentsController < ApplicationController
     Rails.logger.info "Creating environment for user: #{@current_user.id}"
     environment = Environment.create(name: generate_random_name)
     EnvironmentUserJoin.create(environment_id: environment.id, user_id: @current_user.id)
+    file_content = "console.log('Hello, world!');\n\nconst fn = () => { console.log('Hello, world!'); };\n\nfn();"
+    EnvironmentFile.create(environment_id: environment.id, filename: "main.js", content: file_content, file_extension: "js", file_size: file_content.length)
     render json: { environmentId: environment.id }
   end
 
