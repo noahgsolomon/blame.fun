@@ -67,7 +67,84 @@ export type GetEnvironmentQuery = {
     name?: string | null;
     createdAt: any;
     updatedAt: any;
+    environmentFiles: Array<{
+      __typename?: "EnvironmentFile";
+      id: string;
+      environmentId: number;
+      filename?: string | null;
+      content?: string | null;
+      fileExtension?: string | null;
+      fileSize?: number | null;
+      updatedAt: any;
+      createdAt: any;
+    }>;
   } | null;
+};
+
+export type RenameFileMutationVariables = Exact<{
+  id: Scalars["ID"]["input"];
+  filename: Scalars["String"]["input"];
+}>;
+
+export type RenameFileMutation = {
+  __typename?: "Mutation";
+  renameEnvironmentFile: {
+    __typename?: "RenameEnvironmentFilePayload";
+    errors?: Array<string> | null;
+    environmentFile?: {
+      __typename?: "EnvironmentFile";
+      id: string;
+      filename?: string | null;
+    } | null;
+  };
+};
+
+export type DeleteFileMutationVariables = Exact<{
+  id: Scalars["ID"]["input"];
+}>;
+
+export type DeleteFileMutation = {
+  __typename?: "Mutation";
+  deleteEnvironmentFile: {
+    __typename?: "DeleteEnvironmentFilePayload";
+    id?: string | null;
+    errors?: Array<string> | null;
+  };
+};
+
+export type CreateInviteLinkMutationVariables = Exact<{
+  environmentId: Scalars["ID"]["input"];
+  code: Scalars["String"]["input"];
+}>;
+
+export type CreateInviteLinkMutation = {
+  __typename?: "Mutation";
+  createInviteLink: {
+    __typename?: "CreateInviteLinkPayload";
+    errors?: Array<string> | null;
+    invite?: {
+      __typename?: "Invite";
+      id: string;
+      code?: string | null;
+      environmentId: number;
+    } | null;
+  };
+};
+
+export type AddNewFileMutationVariables = Exact<{
+  environmentId: Scalars["ID"]["input"];
+  filename: Scalars["String"]["input"];
+  content: Scalars["String"]["input"];
+  fileExtension: Scalars["String"]["input"];
+}>;
+
+export type AddNewFileMutation = {
+  __typename?: "Mutation";
+  addNewFile: {
+    __typename?: "AddNewFilePayload";
+    id?: string | null;
+    errors?: Array<string> | null;
+  };
 };
 
 export const GetDataDocument = {
@@ -152,6 +229,44 @@ export const GetEnvironmentDocument = {
                 { kind: "Field", name: { kind: "Name", value: "name" } },
                 { kind: "Field", name: { kind: "Name", value: "createdAt" } },
                 { kind: "Field", name: { kind: "Name", value: "updatedAt" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "environmentFiles" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "environmentId" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "content" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "fileExtension" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "fileSize" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "updatedAt" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "createdAt" },
+                      },
+                    ],
+                  },
+                },
               ],
             },
           },
@@ -160,32 +275,438 @@ export const GetEnvironmentDocument = {
     },
   ],
 } as unknown as DocumentNode<GetEnvironmentQuery, GetEnvironmentQueryVariables>;
+export const RenameFileDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "RenameFile" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "id" } },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "filename" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "String" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "renameEnvironmentFile" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "id" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "id" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "filename" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "filename" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "environmentFile" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                      },
+                    ],
+                  },
+                },
+                { kind: "Field", name: { kind: "Name", value: "errors" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RenameFileMutation, RenameFileMutationVariables>;
+export const DeleteFileDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "DeleteFile" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "id" } },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "deleteEnvironmentFile" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "id" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "id" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "errors" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DeleteFileMutation, DeleteFileMutationVariables>;
+export const CreateInviteLinkDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "CreateInviteLink" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "environmentId" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "code" } },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "String" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "createInviteLink" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "environmentId" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "environmentId" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "code" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "code" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "invite" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "code" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "environmentId" },
+                      },
+                    ],
+                  },
+                },
+                { kind: "Field", name: { kind: "Name", value: "errors" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  CreateInviteLinkMutation,
+  CreateInviteLinkMutationVariables
+>;
+export const AddNewFileDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "AddNewFile" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "environmentId" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "filename" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "String" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "content" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "String" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "fileExtension" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "String" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "addNewFile" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "environmentId" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "environmentId" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "filename" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "filename" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "content" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "content" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "fileExtension" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "fileExtension" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "errors" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AddNewFileMutation, AddNewFileMutationVariables>;
+
+/** Autogenerated return type of AddNewFile. */
+export type AddNewFilePayload = {
+  __typename?: "AddNewFilePayload";
+  errors?: Maybe<Array<Scalars["String"]["output"]>>;
+  id?: Maybe<Scalars["ID"]["output"]>;
+};
+
+/** Autogenerated return type of CreateInviteLink. */
+export type CreateInviteLinkPayload = {
+  __typename?: "CreateInviteLinkPayload";
+  errors?: Maybe<Array<Scalars["String"]["output"]>>;
+  invite?: Maybe<Invite>;
+};
+
+/** Autogenerated return type of DeleteEnvironmentFile. */
+export type DeleteEnvironmentFilePayload = {
+  __typename?: "DeleteEnvironmentFilePayload";
+  errors?: Maybe<Array<Scalars["String"]["output"]>>;
+  id?: Maybe<Scalars["ID"]["output"]>;
+};
 
 export type Environment = {
   __typename?: "Environment";
   createdAt: Scalars["ISO8601DateTime"]["output"];
+  environmentFiles: Array<EnvironmentFile>;
   id: Scalars["ID"]["output"];
   name?: Maybe<Scalars["String"]["output"]>;
   updatedAt: Scalars["ISO8601DateTime"]["output"];
 };
 
+export type EnvironmentFile = {
+  __typename?: "EnvironmentFile";
+  content?: Maybe<Scalars["String"]["output"]>;
+  createdAt: Scalars["ISO8601DateTime"]["output"];
+  environmentId: Scalars["Int"]["output"];
+  fileExtension?: Maybe<Scalars["String"]["output"]>;
+  fileSize?: Maybe<Scalars["Int"]["output"]>;
+  filename?: Maybe<Scalars["String"]["output"]>;
+  id: Scalars["ID"]["output"];
+  updatedAt: Scalars["ISO8601DateTime"]["output"];
+};
+
+export type Invite = {
+  __typename?: "Invite";
+  code?: Maybe<Scalars["String"]["output"]>;
+  createdAt: Scalars["ISO8601DateTime"]["output"];
+  environmentId: Scalars["Int"]["output"];
+  id: Scalars["ID"]["output"];
+  updatedAt: Scalars["ISO8601DateTime"]["output"];
+};
+
 export type Mutation = {
   __typename?: "Mutation";
-  /** An example field added by the generator */
-  testField: Scalars["String"]["output"];
+  addNewFile: AddNewFilePayload;
+  createInviteLink: CreateInviteLinkPayload;
+  deleteEnvironmentFile: DeleteEnvironmentFilePayload;
+  renameEnvironmentFile: RenameEnvironmentFilePayload;
+};
+
+export type MutationAddNewFileArgs = {
+  content: Scalars["String"]["input"];
+  environmentId: Scalars["ID"]["input"];
+  fileExtension: Scalars["String"]["input"];
+  filename: Scalars["String"]["input"];
+};
+
+export type MutationCreateInviteLinkArgs = {
+  code: Scalars["String"]["input"];
+  environmentId: Scalars["ID"]["input"];
+};
+
+export type MutationDeleteEnvironmentFileArgs = {
+  id: Scalars["ID"]["input"];
+};
+
+export type MutationRenameEnvironmentFileArgs = {
+  filename: Scalars["String"]["input"];
+  id: Scalars["ID"]["input"];
 };
 
 export type Query = {
   __typename?: "Query";
   currentUser?: Maybe<User>;
   environment?: Maybe<Environment>;
+  environmentFiles: Array<EnvironmentFile>;
   environments: Array<Environment>;
+  invite?: Maybe<Array<Invite>>;
   /** An example field added by the generator */
   testField: Scalars["String"]["output"];
 };
 
 export type QueryEnvironmentArgs = {
   id: Scalars["ID"]["input"];
+};
+
+export type QueryEnvironmentFilesArgs = {
+  environmentId: Scalars["ID"]["input"];
+};
+
+/** Autogenerated return type of RenameEnvironmentFile. */
+export type RenameEnvironmentFilePayload = {
+  __typename?: "RenameEnvironmentFilePayload";
+  environmentFile?: Maybe<EnvironmentFile>;
+  errors?: Maybe<Array<Scalars["String"]["output"]>>;
 };
 
 export type User = {
@@ -328,4 +849,181 @@ export type GetEnvironmentSuspenseQueryHookResult = ReturnType<
 export type GetEnvironmentQueryResult = Apollo.QueryResult<
   GetEnvironmentQuery,
   GetEnvironmentQueryVariables
+>;
+export type RenameFileMutationFn = Apollo.MutationFunction<
+  RenameFileMutation,
+  RenameFileMutationVariables
+>;
+
+/**
+ * __useRenameFileMutation__
+ *
+ * To run a mutation, you first call `useRenameFileMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRenameFileMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [renameFileMutation, { data, loading, error }] = useRenameFileMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      filename: // value for 'filename'
+ *   },
+ * });
+ */
+export function useRenameFileMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    RenameFileMutation,
+    RenameFileMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<RenameFileMutation, RenameFileMutationVariables>(
+    RenameFileDocument,
+    options
+  );
+}
+export type RenameFileMutationHookResult = ReturnType<
+  typeof useRenameFileMutation
+>;
+export type RenameFileMutationResult =
+  Apollo.MutationResult<RenameFileMutation>;
+export type RenameFileMutationOptions = Apollo.BaseMutationOptions<
+  RenameFileMutation,
+  RenameFileMutationVariables
+>;
+export type DeleteFileMutationFn = Apollo.MutationFunction<
+  DeleteFileMutation,
+  DeleteFileMutationVariables
+>;
+
+/**
+ * __useDeleteFileMutation__
+ *
+ * To run a mutation, you first call `useDeleteFileMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteFileMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteFileMutation, { data, loading, error }] = useDeleteFileMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteFileMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    DeleteFileMutation,
+    DeleteFileMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<DeleteFileMutation, DeleteFileMutationVariables>(
+    DeleteFileDocument,
+    options
+  );
+}
+export type DeleteFileMutationHookResult = ReturnType<
+  typeof useDeleteFileMutation
+>;
+export type DeleteFileMutationResult =
+  Apollo.MutationResult<DeleteFileMutation>;
+export type DeleteFileMutationOptions = Apollo.BaseMutationOptions<
+  DeleteFileMutation,
+  DeleteFileMutationVariables
+>;
+export type CreateInviteLinkMutationFn = Apollo.MutationFunction<
+  CreateInviteLinkMutation,
+  CreateInviteLinkMutationVariables
+>;
+
+/**
+ * __useCreateInviteLinkMutation__
+ *
+ * To run a mutation, you first call `useCreateInviteLinkMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateInviteLinkMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createInviteLinkMutation, { data, loading, error }] = useCreateInviteLinkMutation({
+ *   variables: {
+ *      environmentId: // value for 'environmentId'
+ *      code: // value for 'code'
+ *   },
+ * });
+ */
+export function useCreateInviteLinkMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateInviteLinkMutation,
+    CreateInviteLinkMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    CreateInviteLinkMutation,
+    CreateInviteLinkMutationVariables
+  >(CreateInviteLinkDocument, options);
+}
+export type CreateInviteLinkMutationHookResult = ReturnType<
+  typeof useCreateInviteLinkMutation
+>;
+export type CreateInviteLinkMutationResult =
+  Apollo.MutationResult<CreateInviteLinkMutation>;
+export type CreateInviteLinkMutationOptions = Apollo.BaseMutationOptions<
+  CreateInviteLinkMutation,
+  CreateInviteLinkMutationVariables
+>;
+export type AddNewFileMutationFn = Apollo.MutationFunction<
+  AddNewFileMutation,
+  AddNewFileMutationVariables
+>;
+
+/**
+ * __useAddNewFileMutation__
+ *
+ * To run a mutation, you first call `useAddNewFileMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddNewFileMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addNewFileMutation, { data, loading, error }] = useAddNewFileMutation({
+ *   variables: {
+ *      environmentId: // value for 'environmentId'
+ *      filename: // value for 'filename'
+ *      content: // value for 'content'
+ *      fileExtension: // value for 'fileExtension'
+ *   },
+ * });
+ */
+export function useAddNewFileMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    AddNewFileMutation,
+    AddNewFileMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<AddNewFileMutation, AddNewFileMutationVariables>(
+    AddNewFileDocument,
+    options
+  );
+}
+export type AddNewFileMutationHookResult = ReturnType<
+  typeof useAddNewFileMutation
+>;
+export type AddNewFileMutationResult =
+  Apollo.MutationResult<AddNewFileMutation>;
+export type AddNewFileMutationOptions = Apollo.BaseMutationOptions<
+  AddNewFileMutation,
+  AddNewFileMutationVariables
 >;

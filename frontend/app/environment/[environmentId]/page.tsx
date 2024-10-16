@@ -20,7 +20,14 @@ import {
 } from "lucide-react";
 import Editor from "react-simple-code-editor";
 import { highlight, languages } from "prismjs";
-import { EnvironmentFile, GetEnvironmentQuery } from "@/__generated__/graphql";
+import {
+  AddNewFileMutation,
+  CreateInviteLinkMutation,
+  DeleteFileMutation,
+  EnvironmentFile,
+  GetEnvironmentQuery,
+  RenameFileMutation,
+} from "@/__generated__/graphql";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-python";
@@ -147,10 +154,11 @@ export default function Page({
     }
   );
 
-  const [renameFileMutation] = useMutation(RENAME_FILE);
-  const [deleteFileMutation] = useMutation(DELETE_FILE);
-  const [createInviteLinkMutation] = useMutation(CREATE_INVITE_LINK);
-  const [addNewFileMutation] = useMutation(ADD_NEW_FILE);
+  const [renameFileMutation] = useMutation<RenameFileMutation>(RENAME_FILE);
+  const [deleteFileMutation] = useMutation<DeleteFileMutation>(DELETE_FILE);
+  const [createInviteLinkMutation] =
+    useMutation<CreateInviteLinkMutation>(CREATE_INVITE_LINK);
+  const [addNewFileMutation] = useMutation<AddNewFileMutation>(ADD_NEW_FILE);
 
   useEffect(() => {
     if (
@@ -226,6 +234,7 @@ export default function Page({
             fileExtension: getFileExtension(newFileName.split(".").pop() || ""),
           },
         });
+
         console.log("Result:", result);
         if (result.data?.addNewFile.id) {
           await refetch();
