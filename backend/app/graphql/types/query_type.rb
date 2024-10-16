@@ -9,8 +9,15 @@ module Types
     field :current_user, Types::UserType, null: true
     field :environments, [Types::EnvironmentType], null: false
 
+    field :invite, [Types::InviteType], null: true
+
     field :environment, Types::EnvironmentType, null: true do
       argument :id, ID, required: true
+    end
+    
+
+    field :environment_files, [Types::EnvironmentFileType], null: false do
+      argument :environment_id, ID, required: true
     end
 
     def environments
@@ -21,6 +28,12 @@ module Types
       environment = Environment.find(id)
       return nil if environment.nil? || EnvironmentUserJoin.find_by(environment_id: id, user_id: context[:current_user].id).nil?
       environment
+    end
+
+    def environment_files(environment_id:)
+      environment = Environment.find(environment_id)
+      return [] if environment.nil? || EnvironmentUserJoin.find_by(environment_id: environment_id, user_id: context[:current_user].id).nil?
+      environment.environment_files
     end
 
     def current_user
