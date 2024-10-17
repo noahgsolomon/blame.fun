@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_10_15_223950) do
+ActiveRecord::Schema[8.0].define(version: 2024_10_17_214933) do
   create_table "environment_files", force: :cascade do |t|
     t.integer "environment_id", null: false
     t.string "filename"
@@ -51,6 +51,13 @@ ActiveRecord::Schema[8.0].define(version: 2024_10_15_223950) do
     t.datetime "updated_at", null: false
     t.string "browser_token", null: false
     t.string "image"
+    t.string "uid"
+    t.string "provider"
+    t.string "email", null: false
+    t.string "password_digest"
+    t.string "username", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["username"], name: "index_users_on_username", unique: true
   end
 
   add_foreign_key "environment_files", "environments"

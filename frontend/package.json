@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.11.8",
+    "@auth0/auth0-react": "^2.2.4",
     "@graphql-codegen/cli": "^5.0.3",
     "@graphql-codegen/typescript-react-apollo": "^4.3.2",
     "@radix-ui/react-avatar": "^1.1.1",
@@ -26,6 +27,7 @@
     "@rails/actioncable": "^7.2.100",
     "@types/rails__actioncable": "^6.1.11",
     "@types/uuid": "^10.0.0",
+    "@whop/frosted-ui": "^0.0.1-canary.24",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
