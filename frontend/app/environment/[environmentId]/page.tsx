@@ -536,7 +536,13 @@ export default function Page({
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" onClick={addNewFile}>
+            <Button
+              variant="soft"
+              color="green"
+              type="submit"
+              style={{ padding: "0.4rem", cursor: "pointer" }}
+              onClick={addNewFile}
+            >
               Add File
             </Button>
           </DialogFooter>
