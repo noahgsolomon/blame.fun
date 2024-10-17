@@ -9,17 +9,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "frosted-ui";
 import Image from "next/image";
-import { useAuth0 } from "@auth0/auth0-react";
-import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const { loginWithRedirect, isAuthenticated } = useAuth0();
-  const router = useRouter();
-
-  if (isAuthenticated) {
-    return router.push("/");
-  }
-
   return (
     <div className="h-[75%] flex items-center justify-center w-full p-4">
       <Card className="w-full max-w-md">
@@ -33,7 +24,6 @@ export default function Page() {
               className="w-full flex flex-row items-center gap-2"
               variant="surface"
               style={{ cursor: "pointer" }}
-              onClick={() => loginWithRedirect()}
               type="submit"
             >
               <Image src="/google.png" alt="Google" width={20} height={20} />
