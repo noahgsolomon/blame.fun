@@ -11,11 +11,7 @@ Rails.application.routes.draw do
   post 'environments', to: 'environments#create'
   get 'environments', to: 'environments#index'
   resources :environments, only: [:index, :create] do
-    post 'invite', on: :member, to: 'environments#create_invite'
-    resources :files, only: [:create], controller: 'environment_files'
   end
-
-  post 'environments/:code/join', to: 'environments#join'
 
   get 'websocket_auth', to: 'websocket_auth#token'
 
