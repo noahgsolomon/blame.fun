@@ -13,8 +13,9 @@ export default function DataProvider({
 }) {
   const setUser = useUserStore((state) => state.setUser);
   const setEnvironments = useEnvironmentStore((state) => state.setEnvironments);
+  const setRefetch = useEnvironmentStore((state) => state.setRefetch);
 
-  const { data, loading } = useQuery<GetDataQuery>(gql`
+  const { data, loading, refetch } = useQuery<GetDataQuery>(gql`
     query GetData {
       currentUser {
         id
@@ -31,6 +32,8 @@ export default function DataProvider({
       }
     }
   `);
+
+  setRefetch(refetch);
 
   useEffect(() => {
     if (data?.currentUser) {
