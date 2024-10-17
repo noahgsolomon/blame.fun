@@ -14,12 +14,14 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 const documents = {
+    "\n  mutation CreateEnvironment {\n    createEnvironment {\n      id\n    }\n  }\n": types.CreateEnvironmentDocument,
     "\n    query GetData {\n      currentUser {\n        id\n        name\n        image\n        createdAt\n        updatedAt\n      }\n      environments {\n        id\n        name\n        createdAt\n        updatedAt\n      }\n    }\n  ": types.GetDataDocument,
     "\n  query GetEnvironment($id: ID!) {\n    environment(id: $id) {\n      id\n      name\n      createdAt\n      updatedAt\n      environmentFiles {\n        id\n        environmentId\n        filename\n        content\n        fileExtension\n        fileSize\n        updatedAt\n        createdAt\n      }\n    }\n  }\n": types.GetEnvironmentDocument,
     "\n  mutation RenameFile($id: ID!, $filename: String!) {\n    renameEnvironmentFile(id: $id, filename: $filename) {\n      environmentFile {\n        id\n        filename\n      }\n      errors\n    }\n  }\n": types.RenameFileDocument,
     "\n  mutation DeleteFile($id: ID!) {\n    deleteEnvironmentFile(id: $id) {\n      id\n      errors\n    }\n  }\n": types.DeleteFileDocument,
     "\n  mutation CreateInviteLink($environmentId: ID!, $code: String!) {\n    createInviteLink(environmentId: $environmentId, code: $code) {\n      invite {\n        id\n        code\n        environmentId\n      }\n      errors\n    }\n  }\n": types.CreateInviteLinkDocument,
     "\n  mutation AddNewFile(\n    $environmentId: ID!\n    $filename: String!\n    $content: String!\n    $fileExtension: String!\n  ) {\n    addNewFile(\n      environmentId: $environmentId\n      filename: $filename\n      content: $content\n      fileExtension: $fileExtension\n    ) {\n      id\n      errors\n    }\n  }\n": types.AddNewFileDocument,
+    "\n  mutation JoinEnvironment($code: String!) {\n    joinEnvironment(code: $code) {\n      id\n    }\n  }\n": types.JoinEnvironmentDocument,
 };
 
 /**
@@ -36,6 +38,10 @@ const documents = {
  */
 export function gql(source: string): unknown;
 
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation CreateEnvironment {\n    createEnvironment {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation CreateEnvironment {\n    createEnvironment {\n      id\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -60,6 +66,10 @@ export function gql(source: "\n  mutation CreateInviteLink($environmentId: ID!, 
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  mutation AddNewFile(\n    $environmentId: ID!\n    $filename: String!\n    $content: String!\n    $fileExtension: String!\n  ) {\n    addNewFile(\n      environmentId: $environmentId\n      filename: $filename\n      content: $content\n      fileExtension: $fileExtension\n    ) {\n      id\n      errors\n    }\n  }\n"): (typeof documents)["\n  mutation AddNewFile(\n    $environmentId: ID!\n    $filename: String!\n    $content: String!\n    $fileExtension: String!\n  ) {\n    addNewFile(\n      environmentId: $environmentId\n      filename: $filename\n      content: $content\n      fileExtension: $fileExtension\n    ) {\n      id\n      errors\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation JoinEnvironment($code: String!) {\n    joinEnvironment(code: $code) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation JoinEnvironment($code: String!) {\n    joinEnvironment(code: $code) {\n      id\n    }\n  }\n"];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};

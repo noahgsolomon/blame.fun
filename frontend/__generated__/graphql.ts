@@ -34,6 +34,15 @@ export type Scalars = {
   ISO8601DateTime: { input: any; output: any };
 };
 
+export type CreateEnvironmentMutationVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type CreateEnvironmentMutation = {
+  __typename?: "Mutation";
+  createEnvironment: { __typename?: "CreateEnvironmentPayload"; id: string };
+};
+
 export type GetDataQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GetDataQuery = {
@@ -147,6 +156,46 @@ export type AddNewFileMutation = {
   };
 };
 
+export type JoinEnvironmentMutationVariables = Exact<{
+  code: Scalars["String"]["input"];
+}>;
+
+export type JoinEnvironmentMutation = {
+  __typename?: "Mutation";
+  joinEnvironment: {
+    __typename?: "JoinEnvironmentPayload";
+    id?: string | null;
+  };
+};
+
+export const CreateEnvironmentDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "CreateEnvironment" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "createEnvironment" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  CreateEnvironmentMutation,
+  CreateEnvironmentMutationVariables
+>;
 export const GetDataDocument = {
   kind: "Document",
   definitions: [
@@ -487,127 +536,19 @@ export const CreateInviteLinkDocument = {
   CreateInviteLinkMutation,
   CreateInviteLinkMutationVariables
 >;
-export const AddNewFileDocument = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "OperationDefinition",
-      operation: "mutation",
-      name: { kind: "Name", value: "AddNewFile" },
-      variableDefinitions: [
-        {
-          kind: "VariableDefinition",
-          variable: {
-            kind: "Variable",
-            name: { kind: "Name", value: "environmentId" },
-          },
-          type: {
-            kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
-          },
-        },
-        {
-          kind: "VariableDefinition",
-          variable: {
-            kind: "Variable",
-            name: { kind: "Name", value: "filename" },
-          },
-          type: {
-            kind: "NonNullType",
-            type: {
-              kind: "NamedType",
-              name: { kind: "Name", value: "String" },
-            },
-          },
-        },
-        {
-          kind: "VariableDefinition",
-          variable: {
-            kind: "Variable",
-            name: { kind: "Name", value: "content" },
-          },
-          type: {
-            kind: "NonNullType",
-            type: {
-              kind: "NamedType",
-              name: { kind: "Name", value: "String" },
-            },
-          },
-        },
-        {
-          kind: "VariableDefinition",
-          variable: {
-            kind: "Variable",
-            name: { kind: "Name", value: "fileExtension" },
-          },
-          type: {
-            kind: "NonNullType",
-            type: {
-              kind: "NamedType",
-              name: { kind: "Name", value: "String" },
-            },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          {
-            kind: "Field",
-            name: { kind: "Name", value: "addNewFile" },
-            arguments: [
-              {
-                kind: "Argument",
-                name: { kind: "Name", value: "environmentId" },
-                value: {
-                  kind: "Variable",
-                  name: { kind: "Name", value: "environmentId" },
-                },
-              },
-              {
-                kind: "Argument",
-                name: { kind: "Name", value: "filename" },
-                value: {
-                  kind: "Variable",
-                  name: { kind: "Name", value: "filename" },
-                },
-              },
-              {
-                kind: "Argument",
-                name: { kind: "Name", value: "content" },
-                value: {
-                  kind: "Variable",
-                  name: { kind: "Name", value: "content" },
-                },
-              },
-              {
-                kind: "Argument",
-                name: { kind: "Name", value: "fileExtension" },
-                value: {
-                  kind: "Variable",
-                  name: { kind: "Name", value: "fileExtension" },
-                },
-              },
-            ],
-            selectionSet: {
-              kind: "SelectionSet",
-              selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "errors" } },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<AddNewFileMutation, AddNewFileMutationVariables>;
 
 /** Autogenerated return type of AddNewFile. */
 export type AddNewFilePayload = {
   __typename?: "AddNewFilePayload";
   errors?: Maybe<Array<Scalars["String"]["output"]>>;
   id?: Maybe<Scalars["ID"]["output"]>;
+};
+
+/** Autogenerated return type of CreateEnvironment. */
+export type CreateEnvironmentPayload = {
+  __typename?: "CreateEnvironmentPayload";
+  errors?: Maybe<Array<Scalars["String"]["output"]>>;
+  id: Scalars["ID"]["output"];
 };
 
 /** Autogenerated return type of CreateInviteLink. */
@@ -654,11 +595,20 @@ export type Invite = {
   updatedAt: Scalars["ISO8601DateTime"]["output"];
 };
 
+/** Autogenerated return type of JoinEnvironment. */
+export type JoinEnvironmentPayload = {
+  __typename?: "JoinEnvironmentPayload";
+  errors?: Maybe<Array<Scalars["String"]["output"]>>;
+  id?: Maybe<Scalars["ID"]["output"]>;
+};
+
 export type Mutation = {
   __typename?: "Mutation";
   addNewFile: AddNewFilePayload;
+  createEnvironment: CreateEnvironmentPayload;
   createInviteLink: CreateInviteLinkPayload;
   deleteEnvironmentFile: DeleteEnvironmentFilePayload;
+  joinEnvironment: JoinEnvironmentPayload;
   renameEnvironmentFile: RenameEnvironmentFilePayload;
 };
 
@@ -676,6 +626,10 @@ export type MutationCreateInviteLinkArgs = {
 
 export type MutationDeleteEnvironmentFileArgs = {
   id: Scalars["ID"]["input"];
+};
+
+export type MutationJoinEnvironmentArgs = {
+  code: Scalars["String"]["input"];
 };
 
 export type MutationRenameEnvironmentFileArgs = {
@@ -718,6 +672,49 @@ export type User = {
   name: Scalars["String"]["output"];
   updatedAt: Scalars["ISO8601DateTime"]["output"];
 };
+
+export type CreateEnvironmentMutationFn = Apollo.MutationFunction<
+  CreateEnvironmentMutation,
+  CreateEnvironmentMutationVariables
+>;
+
+/**
+ * __useCreateEnvironmentMutation__
+ *
+ * To run a mutation, you first call `useCreateEnvironmentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateEnvironmentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createEnvironmentMutation, { data, loading, error }] = useCreateEnvironmentMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useCreateEnvironmentMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateEnvironmentMutation,
+    CreateEnvironmentMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    CreateEnvironmentMutation,
+    CreateEnvironmentMutationVariables
+  >(CreateEnvironmentDocument, options);
+}
+export type CreateEnvironmentMutationHookResult = ReturnType<
+  typeof useCreateEnvironmentMutation
+>;
+export type CreateEnvironmentMutationResult =
+  Apollo.MutationResult<CreateEnvironmentMutation>;
+export type CreateEnvironmentMutationOptions = Apollo.BaseMutationOptions<
+  CreateEnvironmentMutation,
+  CreateEnvironmentMutationVariables
+>;
 
 /**
  * __useGetDataQuery__
@@ -981,6 +978,24 @@ export type CreateInviteLinkMutationOptions = Apollo.BaseMutationOptions<
   CreateInviteLinkMutation,
   CreateInviteLinkMutationVariables
 >;
+export const AddNewFileDocument = gql`
+  mutation AddNewFile(
+    $environmentId: ID!
+    $filename: String!
+    $content: String!
+    $fileExtension: String!
+  ) {
+    addNewFile(
+      environmentId: $environmentId
+      filename: $filename
+      content: $content
+      fileExtension: $fileExtension
+    ) {
+      id
+      errors
+    }
+  }
+`;
 export type AddNewFileMutationFn = Apollo.MutationFunction<
   AddNewFileMutation,
   AddNewFileMutationVariables
@@ -1026,4 +1041,54 @@ export type AddNewFileMutationResult =
 export type AddNewFileMutationOptions = Apollo.BaseMutationOptions<
   AddNewFileMutation,
   AddNewFileMutationVariables
+>;
+export const JoinEnvironmentDocument = gql`
+  mutation JoinEnvironment($code: String!) {
+    joinEnvironment(code: $code) {
+      id
+    }
+  }
+`;
+export type JoinEnvironmentMutationFn = Apollo.MutationFunction<
+  JoinEnvironmentMutation,
+  JoinEnvironmentMutationVariables
+>;
+
+/**
+ * __useJoinEnvironmentMutation__
+ *
+ * To run a mutation, you first call `useJoinEnvironmentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useJoinEnvironmentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [joinEnvironmentMutation, { data, loading, error }] = useJoinEnvironmentMutation({
+ *   variables: {
+ *      code: // value for 'code'
+ *   },
+ * });
+ */
+export function useJoinEnvironmentMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    JoinEnvironmentMutation,
+    JoinEnvironmentMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    JoinEnvironmentMutation,
+    JoinEnvironmentMutationVariables
+  >(JoinEnvironmentDocument, options);
+}
+export type JoinEnvironmentMutationHookResult = ReturnType<
+  typeof useJoinEnvironmentMutation
+>;
+export type JoinEnvironmentMutationResult =
+  Apollo.MutationResult<JoinEnvironmentMutation>;
+export type JoinEnvironmentMutationOptions = Apollo.BaseMutationOptions<
+  JoinEnvironmentMutation,
+  JoinEnvironmentMutationVariables
 >;
