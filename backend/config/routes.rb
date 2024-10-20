@@ -17,6 +17,8 @@ Rails.application.routes.draw do
 
   post "/graphql", to: 'graphql#execute'
 
+  post '/auth/callback', to: 'auth#callback'
+
   # Defines the root path route ("/")
   root "admin#index"
 end
