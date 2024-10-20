@@ -9,8 +9,13 @@ import {
 } from "@/components/ui/card";
 import { Button } from "frosted-ui";
 import Image from "next/image";
+import { signIn } from "next-auth/react";
 
 export default function Page() {
+  const handleSignIn = () => {
+    signIn("google");
+  };
+
   return (
     <div className="h-[75%] flex items-center justify-center w-full p-4">
       <Card className="w-full max-w-md">
@@ -19,17 +24,15 @@ export default function Page() {
           <CardDescription>Create your account to get started</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action="http://localhost:3000/auth/google_oauth2" method="POST">
-            <Button
-              className="w-full flex flex-row items-center gap-2"
-              variant="surface"
-              style={{ cursor: "pointer" }}
-              type="submit"
-            >
-              <Image src="/google.png" alt="Google" width={20} height={20} />
-              Continue with Google
-            </Button>
-          </form>
+          <Button
+            className="w-full flex flex-row items-center gap-2"
+            variant="surface"
+            style={{ cursor: "pointer" }}
+            onClick={handleSignIn}
+          >
+            <Image src="/google.png" alt="Google" width={20} height={20} />
+            Continue with Google
+          </Button>
         </CardContent>
       </Card>
     </div>

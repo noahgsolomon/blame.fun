@@ -5,8 +5,7 @@ import "frosted-ui/styles.css";
 import { Providers } from "./providers";
 import Header from "./header";
 import DataProvider from "./data-provider";
-import client from "@/lib/apollo-client";
-import { ApolloProvider } from "@apollo/client";
+import { getSession } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Code Together",
@@ -20,22 +19,22 @@ export const metadata: Metadata = {
       en: "/",
     },
   },
-  // metadataBase: new URL("https://noahgsolomon.com"),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
   return (
     <html lang="en" className={"antialiased"} suppressHydrationWarning>
       <body className="font-jetbrains">
-        <Providers>
+        <Providers session={session}>
           <Theme>
             <DataProvider>
               <div className="font-jetbrains h-screen">
-                <Header />
+                {session && <Header />}
                 {children}
               </div>
             </DataProvider>

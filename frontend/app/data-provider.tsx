@@ -5,6 +5,7 @@ import { useUserStore } from "./stores/user-store";
 import { useEnvironmentStore } from "./stores/environment/environment-store";
 import { gql, useQuery } from "@apollo/client";
 import { GetDataQuery } from "@/__generated__/graphql";
+import { useSession } from "next-auth/react";
 
 export default function DataProvider({
   children,
@@ -15,38 +16,49 @@ export default function DataProvider({
   const setEnvironments = useEnvironmentStore((state) => state.setEnvironments);
   const setRefetch = useEnvironmentStore((state) => state.setRefetch);
 
-  const { data, loading, refetch } = useQuery<GetDataQuery>(gql`
-    query GetData {
-      currentUser {
-        id
-        name
-        image
-        createdAt
-        updatedAt
-      }
-      environments {
-        id
-        name
-        createdAt
-        updatedAt
-      }
-    }
-  `);
+  // const { data, loading, refetch } = useQuery<GetDataQuery>(gql`
+  //   query GetData {
+  //     currentUser {
+  //       id
+  //       name
+  //       image
+  //       createdAt
+  //       updatedAt
+  //     }
+  //     environments {
+  //       id
+  //       name
+  //       createdAt
+  //       updatedAt
+  //     }
+  //   }
+  // `);
 
-  setRefetch(refetch);
+  // setRefetch(refetch);
+
+  const { data: session } = useSession();
 
   useEffect(() => {
-    if (data?.currentUser) {
-      setUser(data.currentUser);
-    }
-    if (data?.environments) {
-      setEnvironments(data.environments);
-    }
-  }, [data, loading]);
+    const fetchUserData = async () => {
+      if (session?.user) {
+        const response = await fetch("http://localhost:3000/user", {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        }
+      }
+    };
 
-  if (loading) {
-    return null;
-  }
+    fetchUserData();
+  }, [session]);
+
+  // if (loading) {
+  //   return null;
+  // }
 
   return children;
 }
