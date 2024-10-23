@@ -50,7 +50,7 @@ export type GetDataQuery = {
   currentUser?: {
     __typename?: "User";
     id: string;
-    name: string;
+    username: string;
     image?: string | null;
     createdAt: any;
     updatedAt: any;
