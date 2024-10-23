@@ -5,7 +5,6 @@ import "frosted-ui/styles.css";
 import { Providers } from "./providers";
 import Header from "./header";
 import DataProvider from "./data-provider";
-import { getSession } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Code Together",
@@ -26,15 +25,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getSession();
   return (
     <html lang="en" className={"antialiased"} suppressHydrationWarning>
       <body className="font-jetbrains">
-        <Providers session={session}>
+        <Providers>
           <Theme>
             <DataProvider>
               <div className="font-jetbrains h-screen">
-                {session && <Header />}
+                <Header />
                 {children}
               </div>
             </DataProvider>

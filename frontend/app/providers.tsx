@@ -6,8 +6,6 @@ import { ReactNode, useEffect, useState } from "react";
 import { ApolloProvider } from "@apollo/client";
 import client from "@/lib/apollo-client";
 import { Toaster } from "@/components/ui/toaster";
-import type { Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -33,10 +31,7 @@ function ThemeWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-export function Providers({
-  children,
-  session,
-}: ThemeProviderProps & { session: Session | null }) {
+export function Providers({ children }: ThemeProviderProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -48,12 +43,10 @@ export function Providers({
   }
 
   return (
-    <SessionProvider session={session}>
-      <NextThemeProvider attribute="class">
-        <ThemeWrapper>
-          <ApolloProvider client={client}>{children}</ApolloProvider>
-        </ThemeWrapper>
-      </NextThemeProvider>
-    </SessionProvider>
+    <NextThemeProvider attribute="class">
+      <ThemeWrapper>
+        <ApolloProvider client={client}>{children}</ApolloProvider>
+      </ThemeWrapper>
+    </NextThemeProvider>
   );
 }
