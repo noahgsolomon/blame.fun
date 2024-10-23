@@ -1,5 +1,5 @@
 class FileEnvironmentChannel < ApplicationCable::Channel
-  include UserFetcher
+  include Authentication
 
   # Class variable to store connected users for each file
   @@connected_users = {}

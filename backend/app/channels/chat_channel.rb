@@ -1,5 +1,5 @@
 class ChatChannel < ApplicationCable::Channel
-  include UserFetcher
+  include Authentication
 
   def subscribed
     Rails.logger.info "Attempting to subscribe with user: #{current_user&.id}"
@@ -34,7 +34,7 @@ class ChatChannel < ApplicationCable::Channel
       message: {
         id: message['id'],
         content: message['content'],
-        sender: current_user.as_json(only: [:id, :name, :image]),
+        sender: current_user.as_json(only: [:id, :username, :image]),
         timestamp: message['timestamp'],
         type: message['type']
       }
@@ -46,14 +46,14 @@ class ChatChannel < ApplicationCable::Channel
   def broadcast_user_joined
     ActionCable.server.broadcast("chat_environment_#{params[:environmentId]}", {
       action: 'user_joined',
-      user: current_user.as_json(only: [:id, :name])
+      user: current_user.as_json(only: [:id, :username])
     })
   end
 
   def broadcast_user_left
     ActionCable.server.broadcast("chat_environment_#{params[:environmentId]}", {
       action: 'user_left',
-      user: current_user.as_json(only: [:id, :name])
+      user: current_user.as_json(only: [:id, :username])
     })
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_10_17_214933) do
+ActiveRecord::Schema[8.0].define(version: 2024_10_23_225728) do
   create_table "environment_files", force: :cascade do |t|
     t.integer "environment_id", null: false
     t.string "filename"
@@ -46,13 +46,10 @@ ActiveRecord::Schema[8.0].define(version: 2024_10_17_214933) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "name", null: false
+    t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "browser_token", null: false
     t.string "image"
-    t.string "uid"
-    t.string "provider"
     t.string "email", null: false
     t.string "password_digest"
     t.string "username", null: false
