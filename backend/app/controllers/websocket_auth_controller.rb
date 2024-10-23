@@ -1,5 +1,5 @@
 class WebsocketAuthController < ApplicationController
-  include UserFetcher
+  include Authentication
 
   def token
     temp_token = SecureRandom.urlsafe_base64(32)

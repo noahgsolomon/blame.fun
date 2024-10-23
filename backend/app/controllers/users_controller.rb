@@ -1,17 +1,31 @@
 class UsersController < ApplicationController
-  before_action :authenticate_user
+  include Authentication
+  skip_before_action :authenticate_user, only: [:create]
+  before_action :authenticate_user, only: [:index]
 
   def index
     render json: current_user
   end
 
+  def create
+    user = User.new(user_params)
+    user.image = "icon-#{rand(0..12)}.png"
+    
+    if user.save
+      set_auth_token(user)
+      render json: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }, status: :created
+    else
+      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   private
 
-  def authenticate_user
-    token = request.headers['Authorization']&.split(' ')&.last
-    payload = JWT.decode(token, Rails.application.secrets.secret_key_base).first
-    @current_user = User.find(payload['user_id'])
-  rescue JWT::DecodeError
-    render json: { error: 'Invalid token' }, status: :unauthorized
+  def user_params
+    params.require(:user).permit(:username, :email, :password)
   end
 end
