@@ -6,7 +6,7 @@ export interface Message {
   content: string;
   sender: {
     id: string;
-    name: string;
+    username: string;
     image: string;
   };
   timestamp: string;

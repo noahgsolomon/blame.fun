@@ -36,7 +36,6 @@
     "graphql": "^16.9.0",
     "lucide-react": "^0.447.0",
     "next": "14.2.14",
-    "next-auth": "^4.24.8",
     "next-themes": "^0.3.0",
     "prism-react-renderer": "^2.4.0",
     "prismjs": "^1.29.0",

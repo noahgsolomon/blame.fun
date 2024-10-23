@@ -81,13 +81,13 @@ export default function Chat({ environmentId }: { environmentId: string }) {
                 const newMessage: Message = {
                   id: Date.now().toString(),
                   environmentId,
-                  content: `${data.user?.name || "A user"} has ${
+                  content: `${data.user?.username || "A user"} has ${
                     data.action === "user_joined" ? "joined" : "left"
                   } the chat`,
                   sender: {
                     id: data.user?.id,
-                    name: data.user?.name,
-                    image: data.user?.image,
+                    username: data.user?.username,
+                    image: `/${data.user?.image}`,
                   },
                   timestamp: new Date().toLocaleTimeString(),
                   type: data.action,
@@ -128,8 +128,8 @@ export default function Chat({ environmentId }: { environmentId: string }) {
         content: inputMessage,
         sender: {
           id: user?.id || "",
-          name: user?.name || "",
-          image: user?.image || "",
+          username: user?.username || "",
+          image: `/${user?.image}`,
         },
         environmentId,
         timestamp: new Date().toLocaleTimeString(),
@@ -201,18 +201,19 @@ export default function Chat({ environmentId }: { environmentId: string }) {
                         src={
                           message.type === "message"
                             ? message.sender.id.toString() === user?.id
-                              ? user?.image!
-                              : message.sender?.image!
+                              ? `/${user?.image}`
+                              : `/${message.sender?.image}`
                             : ""
                         }
                         fallback={"🤖"}
                       />
                       <div>
-                        {message.sender.name !== user?.name && (
-                          <p className="ml-2 text-xs text-primary/60">
-                            {message.sender.name}
-                          </p>
-                        )}
+                        {message.sender.username !== user?.username &&
+                          message.type === "message" && (
+                            <p className="ml-2 text-xs text-primary/60">
+                              {message.sender.username}
+                            </p>
+                          )}
                         <ChatBubbleMessage
                           variant={
                             message.type !== "message"
