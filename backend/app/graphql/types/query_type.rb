@@ -21,16 +21,19 @@ module Types
     end
 
     def environments
+      return [] unless context[:current_user]
       context[:current_user].environments
     end
 
     def environment(id:)
+      return nil unless context[:current_user]
       environment = Environment.find(id)
       return nil if environment.nil? || EnvironmentUserJoin.find_by(environment_id: id, user_id: context[:current_user].id).nil?
       environment
     end
 
     def environment_files(environment_id:)
+      return [] unless context[:current_user]
       environment = Environment.find(environment_id)
       return [] if environment.nil? || EnvironmentUserJoin.find_by(environment_id: environment_id, user_id: context[:current_user].id).nil?
       environment.environment_files
