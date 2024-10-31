@@ -55,7 +55,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "frosted-ui";
+import { Button } from "@/components/ui/button";
 
 const GET_ENVIRONMENT = gql`
   query GetEnvironment($id: ID!) {
@@ -461,12 +461,7 @@ export default function Page({
             }}
           />
           <div className="flex flex-row justify-end bg-muted p-2">
-            <Button
-              variant="soft"
-              style={{ cursor: "pointer" }}
-              color="purple"
-              onClick={executeCode}
-            >
+            <Button color="purple" onClick={executeCode}>
               <Play className="mr-2 h-4 w-4" /> Execute
             </Button>
           </div>
@@ -493,19 +488,13 @@ export default function Page({
 
         <div className="flex gap-2 w-[400px] mx-auto">
           <Link href="/" className="flex-1">
-            <Button
-              variant="soft"
-              className="w-full"
-              style={{ cursor: "pointer" }}
-            >
+            <Button className="w-full" color="red">
               <Home className="mr-2 h-4 w-4" /> Go Home
             </Button>
           </Link>
           <Button
-            variant="soft"
             color="blue"
             onClick={() => createInviteLink(params.environmentId, uuid())}
-            style={{ cursor: "pointer" }}
             className="flex-1 w-full"
           >
             <Copy className="mr-2 h-4 w-4" /> Invite Link
