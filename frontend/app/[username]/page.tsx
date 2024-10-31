@@ -9,6 +9,7 @@ import {
   Star,
   GitFork,
   BookOpen,
+  Search,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
 
 const ContributionCalendar = () => {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -59,7 +61,7 @@ const ContributionCalendar = () => {
             className="border p-1 rounded-lg grid grid-cols-[repeat(53,1fr)] gap-1"
           >
             {contributionData.map((count, index) => (
-              <TooltipProvider key={index}>
+              <TooltipProvider delayDuration={100} key={index}>
                 <Tooltip>
                   <TooltipTrigger>
                     <div
@@ -86,6 +88,46 @@ const ContributionCalendar = () => {
           <button className="hover:text-foreground">2020</button>
         </div>
       </div>
+    </div>
+  );
+};
+
+interface Repository {
+  id: number;
+  name: string;
+  description: string;
+  language: string;
+  stars: number;
+  forks: number;
+  updatedAt: string;
+}
+
+const RepositoryList = ({ repositories }: { repositories: Repository[] }) => {
+  return (
+    <div className="space-y-4">
+      {repositories.map((repo) => (
+        <Card key={repo.id}>
+          <CardHeader>
+            <CardTitle className="text-blue-500 hover:underline cursor-pointer text-lg">
+              {repo.name}
+            </CardTitle>
+            <CardDescription className="text-sm mt-1">
+              {repo.description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <div className="w-2 h-2 rounded-full bg-yellow-400 mr-2"></div>
+              <span className="mr-4">{repo.language}</span>
+              <Star className="mr-1 h-3 w-3" />
+              <span className="mr-4">{repo.stars}</span>
+              <GitFork className="mr-1 h-3 w-3" />
+              <span className="mr-4">{repo.forks}</span>
+              <span>Updated {repo.updatedAt}</span>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };
@@ -130,101 +172,142 @@ const ReadmeSection = () => {
 };
 
 export default function Page() {
+  const [repositories, setRepositories] = React.useState<Repository[]>([]);
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  React.useEffect(() => {
+    // Simulating API call to fetch repositories
+    const fetchRepositories = async () => {
+      // In a real application, you would fetch data from an API here
+      const mockRepositories: Repository[] = [
+        {
+          id: 1,
+          name: "shadcn/ui",
+          description:
+            "Beautifully designed components built with Radix UI and Tailwind CSS.",
+          language: "TypeScript",
+          stars: 1200,
+          forks: 234,
+          updatedAt: "2 days ago",
+        },
+        {
+          id: 2,
+          name: "next-template",
+          description: "A Next.js 13 template with App Router support.",
+          language: "JavaScript",
+          stars: 500,
+          forks: 120,
+          updatedAt: "5 days ago",
+        },
+        // Add more mock repositories as needed
+      ];
+      setRepositories(mockRepositories);
+    };
+
+    fetchRepositories();
+  }, []);
+
+  const filteredRepositories = repositories.filter((repo) =>
+    repo.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="container mx-auto p-6 md:p-24">
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Left column: User info */}
-        <div className="w-full md:w-1/4">
-          <Avatar className="h-64 w-64 mx-auto md:mx-0">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-          <h1 className="text-2xl font-bold mt-4">Shadcn</h1>
-          <p className="text-xl text-muted-foreground">shadcn</p>
-          <Button className="w-full mt-4">Edit profile</Button>
-          <p className="mt-4">
-            Building tools and services to help developers build better
-            software.
-          </p>
-          <div className="flex items-center mt-4 text-muted-foreground">
-            <Users className="mr-2 h-4 w-4" />
-            <span className="mr-4">100 followers</span>
-            <span>50 following</span>
+    <div className="flex flex-col md:flex-row gap-6">
+      {/* Left column: User info */}
+      <div className="w-full md:w-1/4">
+        <Avatar className="h-64 w-64 mx-auto md:mx-0">
+          <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+        <h1 className="text-2xl font-bold mt-4">Shadcn</h1>
+        <p className="text-xl text-muted-foreground">shadcn</p>
+        <Button className="w-full mt-4">Edit profile</Button>
+        <p className="mt-4">
+          Building tools and services to help developers build better software.
+        </p>
+        <div className="flex items-center mt-4 text-muted-foreground">
+          <Users className="mr-2 h-4 w-4" />
+          <span className="mr-4">100 followers</span>
+          <span>50 following</span>
+        </div>
+        <div className="mt-4 text-muted-foreground">
+          <div className="flex items-center mt-2">
+            <MapPin className="mr-2 h-4 w-4" />
+            <span>San Francisco, CA</span>
           </div>
-          <div className="mt-4 text-muted-foreground">
-            <div className="flex items-center mt-2">
-              <MapPin className="mr-2 h-4 w-4" />
-              <span>San Francisco, CA</span>
-            </div>
-            <div className="flex items-center mt-2">
-              <Link2 className="mr-2 h-4 w-4" />
-              <a
-                href="https://ui.shadcn.com"
-                className="text-blue-500 hover:underline"
-              >
-                https://ui.shadcn.com
-              </a>
-            </div>
-            <div className="flex items-center mt-2">
-              <CalendarDays className="mr-2 h-4 w-4" />
-              <span>Joined June 2020</span>
-            </div>
+          <div className="flex items-center mt-2">
+            <Link2 className="mr-2 h-4 w-4" />
+            <a
+              href="https://ui.shadcn.com"
+              className="text-blue-500 hover:underline"
+            >
+              https://ui.shadcn.com
+            </a>
+          </div>
+          <div className="flex items-center mt-2">
+            <CalendarDays className="mr-2 h-4 w-4" />
+            <span>Joined June 2020</span>
           </div>
         </div>
+      </div>
 
-        {/* Right column: Tabs and content */}
-        <div className="w-full md:w-3/4">
-          <ReadmeSection />
-          <Tabs defaultValue="overview" className="w-full mt-6">
-            <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="packages">Packages</TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview" className="mt-6">
-              <div className="flex justify-between items-center mb-4">
-                <input
+      {/* Right column: Tabs and content */}
+      <div className="w-full md:w-3/4">
+        <ReadmeSection />
+        <Tabs defaultValue="overview" className="w-full mt-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="repositories">Repositories</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {repositories.slice(0, 4).map((repo) => (
+                <Card key={repo.id} className="flex flex-col h-full">
+                  <CardHeader className="flex-grow">
+                    <CardTitle className="text-blue-500 hover:underline cursor-pointer text-lg">
+                      {repo.name}
+                    </CardTitle>
+                    <CardDescription className="text-sm mt-1">
+                      {repo.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-yellow-400 mr-2"></div>
+                      <span className="mr-4">{repo.language}</span>
+                      <Star className="mr-1 h-3 w-3" />
+                      <span className="mr-4">{repo.stars}</span>
+                      <GitFork className="mr-1 h-3 w-3" />
+                      <span>{repo.forks}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <ContributionCalendar />
+          </TabsContent>
+          <TabsContent value="repositories" className="mt-6">
+            <div className="flex items-center mb-4">
+              <div className="relative flex-grow">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
                   type="text"
                   placeholder="Find a repository..."
-                  className="w-full max-w-sm px-3 py-2 border rounded-md"
+                  className="pl-8 pr-4 py-2 w-full"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <div className="flex gap-2">
-                  <Button variant="outline">Type</Button>
-                  <Button variant="outline">Language</Button>
-                  <Button variant="outline">Sort</Button>
-                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map((repo) => (
-                  <Card key={repo} className="flex flex-col h-full">
-                    <CardHeader className="flex-grow">
-                      <CardTitle className="text-blue-500 hover:underline cursor-pointer text-lg">
-                        shadcn/ui
-                      </CardTitle>
-                      <CardDescription className="text-sm mt-1">
-                        Beautifully designed components built with Radix UI and
-                        Tailwind CSS.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <div className="w-2 h-2 rounded-full bg-yellow-400 mr-2"></div>
-                        <span className="mr-4">TypeScript</span>
-                        <Star className="mr-1 h-3 w-3" />
-                        <span className="mr-4">1.2k</span>
-                        <GitFork className="mr-1 h-3 w-3" />
-                        <span>234</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="flex gap-2 ml-4">
+                <Button variant="outline">Type</Button>
+                <Button variant="outline">Language</Button>
+                <Button variant="outline">Sort</Button>
               </div>
-            </TabsContent>
-            <TabsContent value="projects">Projects content</TabsContent>
-            <TabsContent value="packages">Packages content</TabsContent>
-          </Tabs>
-          <ContributionCalendar />
-        </div>
+            </div>
+            <RepositoryList repositories={filteredRepositories} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
