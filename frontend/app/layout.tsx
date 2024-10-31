@@ -1,10 +1,12 @@
-import { Theme } from "frosted-ui";
 import type { Metadata } from "next";
 import "./globals.css";
 import "frosted-ui/styles.css";
 import { Providers } from "./providers";
 import Header from "./header";
 import DataProvider from "./data-provider";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Code Together",
@@ -26,17 +28,19 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={"antialiased"} suppressHydrationWarning>
-      <body className="font-jetbrains">
+    <html lang="en" className="antialiased" suppressHydrationWarning>
+      <body className={inter.className}>
         <Providers>
-          <Theme>
-            <DataProvider>
-              <div className="font-jetbrains h-screen">
-                <Header />
-                {children}
-              </div>
-            </DataProvider>
-          </Theme>
+          <DataProvider>
+            <div className="flex flex-col min-h-screen font-jetbrains">
+              <Header />
+              <main className="flex-grow">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 md:py-16">
+                  {children}
+                </div>
+              </main>
+            </div>
+          </DataProvider>
         </Providers>
       </body>
     </html>

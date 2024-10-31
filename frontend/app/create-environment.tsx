@@ -2,7 +2,7 @@
 
 import { toast } from "@/hooks/use-toast";
 import { gql, useMutation } from "@apollo/client";
-import { Button } from "frosted-ui";
+import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -54,14 +54,13 @@ export default function CreateEnvironment() {
 
   return (
     <Button
+      color="purple"
       disabled={loading}
       onClick={createEnvironment}
-      variant="soft"
-      color="purple"
-      style={{ cursor: "pointer" }}
-      className="w-full"
+      variant="secondary"
     >
-      <Plus className="size-4" /> create environment
+      <Plus className="mr-2 h-4 w-4" />
+      Create Environment
     </Button>
   );
 }

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/chat/chat-bubble";
 import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
 import { MessageCircle, Send } from "lucide-react";
-import { Button } from "frosted-ui";
+import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Chat({ environmentId }: { environmentId: string }) {
