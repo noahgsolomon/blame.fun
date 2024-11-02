@@ -60,7 +60,7 @@ export default function Page() {
   if (loading || user) return null;
 
   return (
-    <div className="h-[75%] flex items-center justify-center w-full p-4">
+    <div className="h-[80vh] flex items-center justify-center w-full p-4">
       <AuthForm type="signup" onSubmit={handleSubmit} />
     </div>
   );
