@@ -16,18 +16,16 @@ import {
   Command,
   User,
   BookMarked,
-  Bot,
-  FolderKanban,
   Star,
-  Code2,
-  Building2,
-  Building,
   Heart,
   BookOpen,
   HelpCircle,
   Users,
   LogOut,
   Globe,
+  ArrowDownRight,
+  ArrowUpRight,
+  Wallet,
 } from "lucide-react";
 import {
   Sheet,
@@ -58,6 +56,86 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+
+interface Transaction {
+  id: string;
+  user: {
+    name: string;
+    image: string;
+  };
+  token: {
+    name: string;
+    symbol: string;
+    image: string;
+  };
+  amount: number;
+  solAmount: number;
+  type: "buy" | "sell";
+  timestamp: number;
+}
+
+const initialTransactions = Array(16)
+  .fill(null)
+  .map(() => ({
+    id: Math.random().toString(36).substr(2, 9),
+    user: {
+      name: `User${Math.floor(Math.random() * 100)}`,
+      image: `/placeholder.svg?height=32&width=32`,
+    },
+    token: {
+      name: "DecentraGit",
+      symbol: "DGT",
+      image: `/placeholder.svg?height=24&width=24`,
+    },
+    amount: parseFloat((Math.random() * 1000).toFixed(2)),
+    solAmount: parseFloat((Math.random() * 10).toFixed(2)),
+    type: Math.random() > 0.5 ? "buy" : ("sell" as "buy" | "sell"),
+    timestamp: Date.now(),
+  }));
+
+const LiveTransactionPanel = () => {
+  const [transactions] = React.useState<Transaction[]>(initialTransactions);
+  const repeatedTransactions = [
+    ...transactions,
+    ...transactions,
+    ...transactions,
+  ];
+
+  return (
+    <div className="relative w-full overflow-hidden h-8">
+      <div className="flex whitespace-nowrap animate-scroll">
+        {repeatedTransactions.map((transaction, index) => (
+          <div
+            key={`${transaction.id}-${index}`}
+            className="flex items-center space-x-2 bg-muted/50 rounded-md mx-2 px-2 py-1"
+          >
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={transaction.user.image} />
+              <AvatarFallback className="text-xs">
+                {transaction.user.name[0]}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs">
+              {transaction.type === "buy" ? (
+                <span className="text-green-500">bought</span>
+              ) : (
+                <span className="text-red-500">sold</span>
+              )}{" "}
+              {transaction.solAmount} SOL of{" "}
+              <Avatar className="h-4 w-4 inline-block mx-0.5">
+                <AvatarImage src={transaction.token.image} />
+                <AvatarFallback className="text-[10px]">
+                  {transaction.token.symbol}
+                </AvatarFallback>
+              </Avatar>
+              {transaction.token.symbol}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default function Header() {
   const { user } = useUserStore();
@@ -188,7 +266,7 @@ export default function Header() {
                 <AvatarFallback>{user?.username?.[0]}</AvatarFallback>
               </Avatar>
             </SheetTrigger>
-            <SheetContent className="w-80 rounded-l-2xl border">
+            <SheetContent>
               <SheetHeader className="border-b pb-4">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-10 w-10">
@@ -197,8 +275,8 @@ export default function Header() {
                   </Avatar>
                   <div className="flex flex-col">
                     <span className="font-semibold">{user?.username}</span>
-                    <span className="text-sm text-muted-foreground">
-                      he's literally me
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Wallet className="h-4 w-4" /> 14.52 SOL
                     </span>
                   </div>
                 </div>
@@ -264,6 +342,7 @@ export default function Header() {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
+      <LiveTransactionPanel />
     </header>
   );
 }
