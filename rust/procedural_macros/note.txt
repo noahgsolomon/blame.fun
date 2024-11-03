@@ -1,0 +1,11 @@
+procedural macros are like fn's. they take code as input, operate on that code, and produce code as output.
+
+this is in contract w/ declarative macros, which match against patterns and replace code with other code.
+
+3 types of procedural macros
+
+- custom derived (e.g., #[derive(Account)])
+
+- attribute like (e.g., #[account], which applies specific behavior to structs)
+
+- fn like (e.g., my_macro!(...)), which look like fn's but are actually macros that expand into Rust code.
