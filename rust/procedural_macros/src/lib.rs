@@ -20,10 +20,11 @@ use syn::{parse_macro_input, DeriveInput};
 #[proc_macro_attribute]
 pub fn account(_attr: TokenStream, item: TokenStream) -> TokenStream {
     // parse the input tokens into a syntax tree (a struct def in this case)
-    let input = parse_macro_input!(item as DeriveInput)   
+    let input = parse_macro_input!(item as DeriveInput);
 
     // get struct's name to use it in generated code
-    let name = input.ident
+    // clone the struct's name to use it in generated code w/o moving "input"
+    let name = input.ident.clone();
 
     let expanded = quote! {
         // derive the serialize and deserialize traits
