@@ -120,8 +120,7 @@ pub fn declare_id(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         pub const PROGRAM_ID: &str = #id_literal;
-    }
+    };
 
-    TokenStream::from(expanded);
-
+    TokenStream::from(expanded)
 }

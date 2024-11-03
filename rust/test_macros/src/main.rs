@@ -1,4 +1,4 @@
-use anchor_like_macros::account;
+use anchor_like_macros::*;
 use serde::{Serialize, Deserialize};
 
 #[account]
@@ -9,12 +9,16 @@ pub struct Account {
     pub bump: u8
 }
 
+declare_id!("ZgPzcHgQj2oJ6V69Mvm3GQYhnb3Ui5ESGwqPX2bXt451");
+
 fn main() {
     let account = Account{
         user: "Alice".to_string(),
         balance: 1000,
         bump: 1
     };
+
+    println!("PROGRAM_ID: {}", PROGRAM_ID);
 
     match account.validate() {
         Ok(_) => println!("Account is valid."),
@@ -26,5 +30,4 @@ fn main() {
 
     let deserialized: Account = serde_json::from_str(&serialized).unwrap();
     println!("Deserialized: {:?}", deserialized);
-
 }
