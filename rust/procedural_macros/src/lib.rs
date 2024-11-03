@@ -15,7 +15,8 @@ use quote::quote;
 // if ur writing a custom #[derive] macro like #[derive(Account)], you expect that input to be a Rust item that can have #[derive] applied to it, typically a struct, enum, or union.
 // DeriveInput is th data structure designed to represent these items. it holds info about the item's type (e.g., struct or enum), name, fields, attributes, generics, etc.
 // when u use parse_mavro_input!(input as DeriveInput), ur converting the raw TokenStream input a DeriveInput struct that makes it ez to inspect and work w/ the parrsed item in the macro
-use syn::{parse_macro_input, DeriveInput};
+// LitStr - 
+use syn::{parse_macro_input, DeriveInput, LitStr};
 
 #[proc_macro_attribute]
 pub fn account(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -105,3 +106,22 @@ so using the serialize and deserialize custom derive macros essentially is givin
 "hey! this struct should have access to a validate fn, a serialize fn, and a deserialize fn, is basically what adding the custom derived account procedural macro is doing in one line of code"
 
 */
+
+#[proc_macro]
+pub fn declare_id(input: TokenStream) -> TokenStream {
+    // parse the input into string literal instead of as a list of tokens
+    let id_literal = parse_macro_input!(input as LitStr);
+    let id_value = id_literal.value();
+
+    // extra checks, like which would be in actual declare_id procedural function-like macro
+    if id_value.len() != 44 {
+        return syn::Error::new_spanned(id_literal, "Invalid Pubkey length").to_compile_error().into();
+    }
+
+    let expanded = quote! {
+        pub const PROGRAM_ID: &str = #id_literal;
+    }
+
+    TokenStream::from(expanded);
+
+}
