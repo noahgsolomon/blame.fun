@@ -4,14 +4,17 @@
 resolution = true
 skip-lint = false
 
+[programs.localnet]
+anchor = "3GSKMxL6kyijtC3YjLs64EkU9uuDkcNDJqvUSfAaURX4"
+
 [programs.devnet]
-anchor = "ZgPzcHgQj2oJ6V69Mvm3GQYhnb3Ui5ESGwqPX2bXt45"
+anchor = "3GSKMxL6kyijtC3YjLs64EkU9uuDkcNDJqvUSfAaURX4"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id_new.json"
 
 [scripts]
