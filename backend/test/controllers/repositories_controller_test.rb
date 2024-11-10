@@ -1,6 +1,6 @@
 require "test_helper"
 
-class EnvironmentUserJoinTest < ActiveSupport::TestCase
+class RepositoriesControllerTest < ActionDispatch::IntegrationTest
   # test "the truth" do
   #   assert true
   # end

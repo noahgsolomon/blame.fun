@@ -10,39 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_10_23_225728) do
-  create_table "environment_files", force: :cascade do |t|
-    t.integer "environment_id", null: false
-    t.string "filename"
-    t.text "content"
-    t.string "file_extension"
-    t.integer "file_size"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["environment_id"], name: "index_environment_files_on_environment_id"
-  end
-
-  create_table "environment_user_joins", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "environment_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["environment_id"], name: "index_environment_user_joins_on_environment_id"
-    t.index ["user_id"], name: "index_environment_user_joins_on_user_id"
-  end
-
-  create_table "environments", force: :cascade do |t|
+ActiveRecord::Schema[8.0].define(version: 2024_11_10_231300) do
+  create_table "repositories", force: :cascade do |t|
     t.string "name"
+    t.text "description"
+    t.integer "user_id", null: false
+    t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-  end
-
-  create_table "invites", force: :cascade do |t|
-    t.string "code"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "environment_id", null: false
-    t.index ["environment_id"], name: "index_invites_on_environment_id"
+    t.index ["user_id"], name: "index_repositories_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -57,8 +33,5 @@ ActiveRecord::Schema[8.0].define(version: 2024_10_23_225728) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
-  add_foreign_key "environment_files", "environments"
-  add_foreign_key "environment_user_joins", "environments"
-  add_foreign_key "environment_user_joins", "users"
-  add_foreign_key "invites", "environments"
+  add_foreign_key "repositories", "users"
 end

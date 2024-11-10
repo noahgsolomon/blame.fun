@@ -8,11 +8,6 @@ Rails.application.routes.draw do
 
   get "user", to: "users#index"
 
-  post 'environments', to: 'environments#create'
-  get 'environments', to: 'environments#index'
-  resources :environments, only: [:index, :create] do
-  end
-
   get 'websocket_auth', to: 'websocket_auth#token'
 
   post "/graphql", to: 'graphql#execute'

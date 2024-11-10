@@ -68,3 +68,10 @@ gem 'omniauth-google-oauth2'
 gem 'omniauth-rails_csrf_protection'
 
 gem 'jwt'
+gem 'rugged', github: 'libgit2/rugged', submodules: true
+
+gem 'graphql-rails-generators', group: :development
+gem "search_object_graphql"
+
+gem 'search_object'
+gem 'search_object_graphql'

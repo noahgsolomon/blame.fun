@@ -1,6 +1,6 @@
 require "test_helper"
 
-class EnvironmentFileTest < ActiveSupport::TestCase
+class RepositoryTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end
