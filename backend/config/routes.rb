@@ -10,8 +10,6 @@ Rails.application.routes.draw do
 
   get 'websocket_auth', to: 'websocket_auth#token'
 
-  post "/graphql", to: 'graphql#execute'
-
   post '/auth/callback', to: 'auth#callback'
 
   # Defines the root path route ("/")
