@@ -5,12 +5,17 @@ module Mutations
     argument :attributes, Types::Input::RepositoryInput, required: true
 
     def resolve(attributes:)
-      model = Repository.new(attributes.to_h)
+      model = Repository.new(attributes.to_h.merge(user_id: context[:current_user].id))
 
       if model.save
-        {repository: model}
+        { repository: model }
       else
-        model_errors!(model)
+        raise GraphQL::ExecutionError.new(
+          "Failed to create repository",
+          extensions: {
+            errors: model.errors.full_messages
+          }
+        )
       end
     end
   end

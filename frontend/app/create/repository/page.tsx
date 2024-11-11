@@ -23,29 +23,43 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Lock, Globe } from "lucide-react";
+import { useMutation } from "@apollo/client";
+import { CREATE_REPOSITORY } from "@/lib/mutations";
+import { useEffect } from "react";
+import { useUserStore } from "@/app/stores/user-store";
 
 export default function Page() {
   const router = useRouter();
-  const [isPublic, setIsPublic] = React.useState(true);
+  const { user } = useUserStore();
+  // const [isPublic, setIsPublic] = React.useState(true);
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [tokenSymbol, setTokenSymbol] = React.useState("");
   const [initialSupply, setInitialSupply] = React.useState("");
   const [license, setLicense] = React.useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [createRepository, { data, loading, error }] =
+    useMutation(CREATE_REPOSITORY);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log({
-      name,
-      description,
-      isPublic,
-      tokenSymbol,
-      initialSupply,
-      license,
-    });
-    // After successful creation, redirect to the new repository page
-    router.push(`/${name}`);
+    try {
+      const result = await createRepository({
+        variables: {
+          attributes: {
+            name,
+            description,
+            slug: name.toLowerCase().replace(/ /g, "-"),
+          },
+        },
+      });
+      console.log(result.data.createRepository.repository);
+      router.push(
+        `/${user?.username}/${result.data.createRepository.repository.slug}`
+      );
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
@@ -80,7 +94,7 @@ export default function Page() {
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
-              <div className="flex items-center space-x-2">
+              {/* <div className="flex items-center space-x-2">
                 <Switch
                   id="public"
                   checked={isPublic}
@@ -99,7 +113,7 @@ export default function Page() {
                     </>
                   )}
                 </Label>
-              </div>
+              </div> */}
               <div className="space-y-2">
                 <Label htmlFor="tokenSymbol">Token Symbol</Label>
                 <Input

@@ -2,7 +2,17 @@ module Resolvers
   class RepositorySearch < Resolvers::BaseSearchResolver
     type [Types::RepositoryType], null: false
     
-    scope { Repository.all }
+    # Start with repositories joined with users
+    scope { Repository.joins(:user) }
+
+    # Find by username and slug combination
+    option(:username, type: String) { |scope, value| 
+      scope.where(users: { username: value })
+    }
+
+    option(:slug, type: String) { |scope, value|
+      scope.where(repositories: { slug: value })
+    }
 
     # Exact match filters
     option(:id, type: GraphQL::Types::ID) { |scope, value| 
