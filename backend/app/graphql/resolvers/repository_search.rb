@@ -14,6 +14,10 @@ module Resolvers
       scope.where(repositories: { slug: value })
     }
 
+    option(:git_url, type: String) { |scope, value|
+      scope.where(repositories: { git_url: value })
+    }
+
     # Exact match filters
     option(:id, type: GraphQL::Types::ID) { |scope, value| 
       scope.where(id: value) 
