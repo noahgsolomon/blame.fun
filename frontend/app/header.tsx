@@ -80,12 +80,12 @@ const initialTransactions = Array(16)
     id: Math.random().toString(36).substr(2, 9),
     user: {
       name: `User${Math.floor(Math.random() * 100)}`,
-      image: `/placeholder.svg?height=32&width=32`,
+      image: `/icon-${Math.floor(Math.random() * 13)}.png`,
     },
     token: {
       name: "DecentraGit",
-      symbol: "DGT",
-      image: `/placeholder.svg?height=24&width=24`,
+      symbol: Math.random().toString(36).substr(2, 3).toUpperCase(),
+      image: `/coin.gif`,
     },
     amount: parseFloat((Math.random() * 1000).toFixed(2)),
     solAmount: parseFloat((Math.random() * 10).toFixed(2)),
@@ -115,20 +115,22 @@ const LiveTransactionPanel = () => {
                 {transaction.user.name[0]}
               </AvatarFallback>
             </Avatar>
-            <span className="text-xs">
+            <span className="text-xs flex flex-row gap-2 items-center justify-center">
               {transaction.type === "buy" ? (
                 <span className="text-green-500">bought</span>
               ) : (
                 <span className="text-red-500">sold</span>
               )}{" "}
               {transaction.solAmount} SOL of{" "}
-              <Avatar className="h-4 w-4 inline-block mx-0.5">
-                <AvatarImage src={transaction.token.image} />
-                <AvatarFallback className="text-[10px]">
-                  {transaction.token.symbol}
-                </AvatarFallback>
-              </Avatar>
-              {transaction.token.symbol}
+              <div className="flex flex-row gap-1 items-center justify-center">
+                <Avatar className="h-4 w-4 inline-block">
+                  <AvatarImage src={transaction.token.image} />
+                  <AvatarFallback className="text-[10px]">
+                    {transaction.token.symbol}
+                  </AvatarFallback>
+                </Avatar>
+                {transaction.token.symbol}
+              </div>
             </span>
           </div>
         ))}
