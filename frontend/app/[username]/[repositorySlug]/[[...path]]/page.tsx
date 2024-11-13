@@ -31,6 +31,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { MapPin } from "lucide-react";
 
 type GitTreeEntry = {
   name: string;
@@ -50,6 +57,14 @@ type GitTreeEntryDetail = {
   date?: string;
 };
 
+type User = {
+  name: string;
+  username: string;
+  avatar: string;
+  location: string;
+  bio: string;
+};
+
 type Repository = {
   id: string;
   name: string;
@@ -61,11 +76,7 @@ type Repository = {
   tree: GitTreeEntry[];
   treeEntryDetails: GitTreeEntryDetail[];
   fileContent?: string;
-};
-
-type FileContent = {
-  content: string;
-  path: string;
+  user: User;
 };
 
 export default function RepositoryView() {
@@ -159,11 +170,18 @@ export default function RepositoryView() {
             </div>
           </div>
         )}
-        {entries.map((entry: GitTreeEntryDetail) => (
-          <div key={entry.path} className="flex flex-col">
+        {entries.map((entry: GitTreeEntryDetail, index: number) => (
+          <div
+            key={entry.path}
+            className={`flex flex-col ${
+              index === entries.length - 1 && !currentPath ? "rounded-b-lg" : ""
+            }`}
+          >
             <Link
               href={`/${username}/${repositorySlug}/${entry.path}`}
-              className="flex items-center px-3 py-2 hover:bg-accent cursor-pointer group"
+              className={`flex items-center px-3 py-2 hover:bg-accent cursor-pointer group ${
+                index === entries.length - 1 ? "rounded-b-lg" : ""
+              }`}
             >
               <div className="flex items-center w-full">
                 <img
@@ -205,15 +223,59 @@ export default function RepositoryView() {
   const isFile = repository.fileContent != null;
 
   const BreadcrumbNav = () => {
-    if (!currentPath) return null;
-
     const pathParts = currentPath.split("/");
 
     return (
-      <div className="flex items-center space-x-2 text-sm mb-2">
+      <div className="flex items-center space-x-2">
+        <HoverCard openDelay={250}>
+          <HoverCardTrigger asChild>
+            <Link className="flex items-center" href={`/${username}`}>
+              <Avatar className="size-6">
+                <AvatarImage src={repository.user.avatar} alt={username} />
+                <AvatarFallback>
+                  {username.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <div className="flex flex-col gap-2">
+              <Link href={`/${username}`}>
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={repository.user.avatar} />
+                  <AvatarFallback>
+                    {username.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <h4 className="text-sm font-semibold">
+                  {repository.user.name || username}
+                </h4>
+              </Link>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">
+                  {repository.user.username}
+                </p>
+                {repository.user.bio && (
+                  <p className="text-sm text-muted-foreground">
+                    {repository.user.bio}
+                  </p>
+                )}
+                {repository.user.location && (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <MapPin className="mr-1 h-3 w-3" />
+                    {repository.user.location}
+                  </div>
+                )}
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+        <span className="text-muted-foreground">/</span>
         <Link
           href={`/${username}/${repositorySlug}`}
-          className="text-blue-500 hover:text-blue-600 text-lg"
+          className={`text-lg ${
+            currentPath ? "text-blue-500 hover:text-blue-600" : ""
+          }`}
         >
           {repository.name}
         </Link>
@@ -241,12 +303,7 @@ export default function RepositoryView() {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-semibold flex items-center gap-3">
-            {repository.name}
-            <Badge variant={"outline"}>Public</Badge>
-          </h1>
-        </div>
+        <BreadcrumbNav />
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="space-x-2">
             <Star className="h-4 w-4" />
@@ -258,7 +315,6 @@ export default function RepositoryView() {
           </Button>
         </div>
       </div>
-      {currentPath && <BreadcrumbNav />}
 
       <div className="border rounded-lg bg-background">
         <div className="border-b p-3">
