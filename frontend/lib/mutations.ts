@@ -14,3 +14,22 @@ export const CREATE_REPOSITORY = gql`
     }
   }
 `;
+
+export const UPDATE_USER = gql`
+  mutation UpdateUser($id: ID!, $attributes: UserInput!) {
+    updateUser(id: $id, attributes: $attributes) {
+      user {
+        id
+        name
+        username
+        bio
+        location
+        website
+        twitter
+        github
+        avatar
+        email
+      }
+    }
+  }
+`;
