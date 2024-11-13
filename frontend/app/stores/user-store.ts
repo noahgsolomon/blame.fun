@@ -6,6 +6,14 @@ export type User = {
   image?: string | null;
   createdAt: string;
   updatedAt: string;
+  location: string;
+  bio: string;
+  website: string;
+  twitter: string;
+  github: string;
+  name: string;
+  email: string;
+  avatar: string;
 } | null;
 
 interface UserState {
