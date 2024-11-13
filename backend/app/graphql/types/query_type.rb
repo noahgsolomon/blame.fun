@@ -1,6 +1,9 @@
 module Types
   class QueryType < Types::BaseObject
-		field :repositories, resolver: Resolvers::RepositorySearch 
+    field :repositories, resolver: Resolvers::RepositorySearch
+
+    field :user, resolver: Resolvers::UserSearch
+
     field :node, Types::NodeType, null: true, description: "Fetches an object given its ID." do
       argument :id, ID, required: true, description: "ID of the object."
     end
