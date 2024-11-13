@@ -25,7 +25,7 @@ module Resolvers
 
     # Partial match (LIKE) search
     option(:name, type: String) { |scope, value| 
-      scope.where("name ILIKE ?", "%#{value}%") 
+      scope.where(repositories: { name: value }) 
     }
 
     # Date range filters
