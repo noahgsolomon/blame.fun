@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery, useMutation } from "@apollo/client";
+import { GET_USER_PROFILE, GET_USER_REPOSITORIES } from "@/lib/queries";
+import { useUserStore } from "@/app/stores/user-store";
+import Markdown from "react-markdown";
 import {
   CalendarDays,
   MapPin,
@@ -15,7 +20,6 @@ import {
   Zap,
   ArrowUpRight,
   ArrowDownRight,
-  Image,
   RefreshCcw,
   TrendingUp,
   ArrowUpDown,
@@ -28,6 +32,9 @@ import {
   ChartBar,
   Percent,
   Award,
+  Heart,
+  Plus,
+  Upload,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -78,6 +85,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import Image from "next/image";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { UPDATE_USER } from "@/lib/mutations";
 
 interface Transaction {
   id: number;
@@ -153,6 +165,7 @@ const ContributionCalendar = () => {
 interface Repository {
   id: number;
   name: string;
+  slug: string;
   description: string;
   language: string;
   stars: number;
@@ -177,16 +190,78 @@ interface Repository {
   totalSupply: number;
 }
 
-const RepositoryList = ({ repositories }: { repositories: Repository[] }) => {
+const EmptyRepositories = ({ isOwnProfile }: { isOwnProfile: boolean }) => {
+  return (
+    <div className="text-center p-6 border rounded-lg bg-card">
+      <div className="mb-6">
+        <Image
+          src="/coin.gif"
+          alt="No repositories"
+          width={120}
+          height={120}
+          className="mx-auto opacity-50"
+        />
+      </div>
+      {isOwnProfile ? (
+        <>
+          <h3 className="text-lg font-semibold mb-2">
+            You don&apos;t have any repositories yet
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            Repositories are a great way to share your code and work with
+            others.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild>
+              <Link href="/create/repository">
+                <Plus className="mr-2 h-4 w-4" />
+                New repository
+              </Link>
+            </Button>
+            <Button variant="outline">
+              <Upload className="mr-2 h-4 w-4" />
+              Import repository
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <h3 className="text-lg font-semibold mb-2">
+            This user doesn&apos;t have any repositories yet
+          </h3>
+          <p className="text-muted-foreground">
+            When they create repositories, they&apos;ll appear here.
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
+
+const RepositoryList = ({
+  repositories,
+  isOwnProfile,
+  username,
+}: {
+  repositories: Repository[];
+  isOwnProfile: boolean;
+  username: string;
+}) => {
+  if (!repositories.length) {
+    return <EmptyRepositories isOwnProfile={isOwnProfile} />;
+  }
+
   return (
     <div className="space-y-4">
       {repositories.map((repo) => (
         <Card key={repo.id} className="flex flex-col h-full">
           <CardHeader className="flex-grow">
             <div className="flex justify-between items-start">
-              <CardTitle className="text-blue-500 hover:underline cursor-pointer text-lg flex items-center">
-                {repo.name}
-              </CardTitle>
+              <Link href={`/${username}/${repo.slug}`}>
+                <CardTitle className="text-blue-500 hover:underline cursor-pointer text-lg flex items-center">
+                  {repo.name}
+                </CardTitle>
+              </Link>
               <AssetSheet repo={repo} />
             </div>
             <CardDescription className="text-sm mt-1">
@@ -318,40 +393,23 @@ const RepositoryList = ({ repositories }: { repositories: Repository[] }) => {
   );
 };
 
-const ReadmeSection = () => {
+const ReadmeSection = ({
+  content,
+  username,
+}: {
+  content: string;
+  username: string;
+}) => {
   return (
     <Card className="mb-6">
       <CardHeader>
         <CardTitle className="text-xl font-semibold flex items-center">
           <BookOpen className="mr-2 h-5 w-5" />
-          cryptodev / README.md
+          {username} / README.md
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="prose dark:prose-invert max-w-none">
-          <h1>👋 Hi, I'm CryptoDev</h1>
-          <p>
-            I'm a blockchain enthusiast and open-source developer. I love
-            building decentralized tools that empower developers and users
-            alike.
-          </p>
-          <h2>🚀 Featured Projects</h2>
-          <ul>
-            <li>
-              <a href="#">decentra-git</a> - A decentralized git hosting
-              platform with built-in token economics.
-            </li>
-            <li>
-              <a href="#">web3-collab</a> - Collaborative coding environment
-              powered by blockchain technology.
-            </li>
-          </ul>
-          <h2>📫 Get in touch</h2>
-          <p>
-            <a href="#">Twitter</a> •<a href="#">GitHub</a> •
-            <a href="#">DecentraGit</a>
-          </p>
-        </div>
+        <Markdown>{content}</Markdown>
       </CardContent>
     </Card>
   );
@@ -600,106 +658,132 @@ const TokenBadge = ({
 };
 
 export default function Page() {
+  const router = useRouter();
+  const params = useParams();
+  const { user } = useUserStore();
   const [repositories, setRepositories] = React.useState<Repository[]>([]);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: user?.name || "",
+    bio: user?.bio || "",
+    location: user?.location || "",
+    website: user?.website || "",
+  });
+
+  const isOwnProfile = user?.username === params.username;
+
+  const {
+    data: profileData,
+    loading: profileLoading,
+    refetch,
+  } = useQuery(GET_USER_PROFILE, {
+    variables: { username: params.username },
+    skip: !params.username,
+  });
+
+  const { data: repoData, loading: repoLoading } = useQuery(
+    GET_USER_REPOSITORIES,
+    {
+      variables: { username: params.username },
+      skip: !params.username,
+    }
+  );
 
   React.useEffect(() => {
-    // Simulating API call to fetch repositories
-    const fetchRepositories = async () => {
-      // In a real application, you would fetch data from an API here
-      const mockRepositories: Repository[] = [
-        {
-          id: 1,
-          name: "decentra-git",
-          description:
-            "A decentralized git hosting platform with built-in token economics.",
-          language: "TypeScript",
-          stars: 1200,
-          forks: 234,
-          updatedAt: "2 days ago",
-          tokenSymbol: "DGT",
-          tokenPrice: 0.05,
-          marketCap: 5000000,
-          liquidity: 250000,
-          holders: 2500,
-          topHoldersPercent: 45,
-          snipersCount: 8,
-          maxSnipers: 10,
-          blueChipPercent: 65,
-          rugpullRisk: "Low",
-          auditScore: 95,
-          maxAuditScore: 100,
-          priceChange24h: 12.5,
-          tokenHistory: [
-            { date: "2023-01", price: 0.01 },
-            { date: "2023-02", price: 0.02 },
-            { date: "2023-03", price: 0.03 },
-            { date: "2023-04", price: 0.04 },
-            { date: "2023-05", price: 0.05 },
-          ],
-          volume24h: 500000,
-          circulatingSupply: 100000000,
-          totalSupply: 150000000,
-        },
-        // Add similar data for other repositories
-      ];
-      setRepositories(mockRepositories);
-    };
+    console.log("sup profileData", profileData);
+    if (!profileLoading && profileData.user.length === 0) {
+      router.push("/404");
+    }
+    if (profileData?.user[0]) {
+      setEditForm({
+        name: profileData.user[0].name || "",
+        bio: profileData.user[0].bio || "",
+        location: profileData.user[0].location || "",
+        website: profileData.user[0].website || "",
+      });
+    }
+  }, [profileData, profileLoading]);
 
-    const fetchTransactions = async () => {
-      const mockTransactions: Transaction[] = [
-        {
-          id: 1,
-          type: "buy",
-          amount: 100,
-          tokenSymbol: "DGT",
-          price: 0.05,
-          date: "2023-05-01",
-        },
-        {
-          id: 2,
-          type: "sell",
-          amount: 50,
-          tokenSymbol: "W3C",
-          price: 0.02,
-          date: "2023-05-02",
-        },
-        {
-          id: 3,
-          type: "buy",
-          amount: 200,
-          tokenSymbol: "DGT",
-          price: 0.055,
-          date: "2023-05-03",
-        },
-        {
-          id: 4,
-          type: "buy",
-          amount: 150,
-          tokenSymbol: "W3C",
-          price: 0.022,
-          date: "2023-05-04",
-        },
-        {
-          id: 5,
-          type: "sell",
-          amount: 75,
-          tokenSymbol: "DGT",
-          price: 0.06,
-          date: "2023-05-05",
-        },
-      ];
-      setTransactions(mockTransactions);
-    };
-
-    fetchRepositories();
-    fetchTransactions();
-  }, []);
+  React.useEffect(() => {
+    if (repoData?.repositories) {
+      const mappedRepos = repoData.repositories.map((repo: any) => ({
+        id: repo.id,
+        name: repo.name,
+        description: repo.description,
+        language: "TypeScript", // This would come from backend eventually
+        stars: 0, // These would come from backend eventually
+        forks: 0,
+        slug: repo.slug,
+        updatedAt: repo.updatedAt,
+        tokenSymbol: "TKN",
+        tokenPrice: 0.05,
+        marketCap: 5000000,
+        liquidity: 250000,
+        holders: 2500,
+        topHoldersPercent: 45,
+        snipersCount: 8,
+        maxSnipers: 10,
+        blueChipPercent: 65,
+        rugpullRisk: "Low",
+        auditScore: 95,
+        maxAuditScore: 100,
+        priceChange24h: 12.5,
+        tokenHistory: [
+          { date: "2023-01", price: 0.01 },
+          { date: "2023-02", price: 0.02 },
+          { date: "2023-03", price: 0.03 },
+          { date: "2023-04", price: 0.04 },
+          { date: "2023-05", price: 0.05 },
+        ],
+        volume24h: 500000,
+        circulatingSupply: 100000000,
+        totalSupply: 150000000,
+      }));
+      setRepositories(mappedRepos);
+    }
+  }, [repoData]);
 
   const filteredRepositories = repositories.filter((repo) =>
     repo.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const [updateUser] = useMutation(UPDATE_USER);
+
+  const handleSave = async () => {
+    try {
+      const result = await updateUser({
+        variables: {
+          id: user?.id ?? "",
+          attributes: {
+            name:
+              editForm.name && editForm.name !== "" ? editForm.name : undefined,
+            bio: editForm.bio && editForm.bio !== "" ? editForm.bio : undefined,
+            location:
+              editForm.location && editForm.location !== ""
+                ? editForm.location
+                : undefined,
+            website:
+              editForm.website && editForm.website !== ""
+                ? editForm.website
+                : undefined,
+          },
+        },
+      });
+
+      console.log("Update result:", result);
+
+      if (result.data) {
+        setIsEditing(false);
+        await refetch();
+      }
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    }
+  };
+
+  if (profileLoading || profileData.user.length === 0) return null;
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 p-4">
@@ -707,16 +791,70 @@ export default function Page() {
       <div className="w-full lg:w-1/4 space-y-4">
         <div className="flex flex-col items-center lg:items-start">
           <Avatar className="h-32 w-32 lg:h-64 lg:w-64">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@cryptodev" />
-            <AvatarFallback>CD</AvatarFallback>
+            <AvatarImage
+              src={profileData?.user[0].avatar ?? ""}
+              alt={profileData?.user[0].username ?? ""}
+            />
+            <AvatarFallback>
+              {profileData?.user[0].username.slice(0, 2).toUpperCase() ?? ""}
+            </AvatarFallback>
           </Avatar>
-          <h1 className="text-2xl font-bold mt-4">CryptoDev</h1>
-          <p className="text-xl text-muted-foreground">cryptodev</p>
+          {isEditing ? (
+            <Input
+              className="mt-4 text-2xl font-bold"
+              value={editForm.name}
+              onChange={(e) =>
+                setEditForm({ ...editForm, name: e.target.value })
+              }
+            />
+          ) : (
+            <h1 className="text-2xl font-bold mt-4">
+              {profileData?.user[0].name}
+            </h1>
+          )}
+          <p className="text-xl text-muted-foreground">
+            {profileData?.user[0].username}
+          </p>
         </div>
-        <Button className="w-full">Connect Wallet</Button>
-        <p className="text-sm">
-          Building the future of decentralized development and collaboration.
-        </p>
+        <div className="flex flex-row gap-2 w-full">
+          {isOwnProfile &&
+            (isEditing ? (
+              <div className="flex gap-2 w-full">
+                <Button
+                  variant="default"
+                  className="flex-1"
+                  onClick={handleSave}
+                >
+                  Save profile
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit profile
+              </Button>
+            ))}
+        </div>
+        {isEditing ? (
+          <Textarea
+            className="text-sm"
+            value={editForm.bio}
+            onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+            placeholder="Add a bio"
+          />
+        ) : (
+          <p className="text-sm">{profileData?.user[0].bio}</p>
+        )}
         <div className="flex items-center text-sm text-muted-foreground">
           <Users className="mr-2 h-4 w-4" />
           <span className="mr-4">100 followers</span>
@@ -725,24 +863,63 @@ export default function Page() {
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center">
             <MapPin className="mr-2 h-4 w-4" />
-            <span>Decentraland</span>
+            {isEditing ? (
+              <Input
+                value={editForm.location}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, location: e.target.value })
+                }
+                placeholder="Add location"
+              />
+            ) : (
+              <span>{profileData?.user[0].location}</span>
+            )}
           </div>
           <div className="flex items-center">
             <Link2 className="mr-2 h-4 w-4" />
-            <a href="#" className="text-blue-500 hover:underline">
-              https://decentra.git
-            </a>
+            {isEditing ? (
+              <Input
+                value={editForm.website}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, website: e.target.value })
+                }
+                placeholder="Add website"
+              />
+            ) : (
+              <a
+                target="_blank"
+                href={profileData?.user[0].website}
+                className="text-blue-500 hover:underline"
+              >
+                {profileData?.user[0].website}
+              </a>
+            )}
           </div>
           <div className="flex items-center">
             <CalendarDays className="mr-2 h-4 w-4" />
-            <span>Joined June 2023</span>
+            <span>
+              Joined{" "}
+              {profileData?.user[0].createdAt
+                ? new Date(
+                    profileData?.user[0].createdAt.split(".")[0]
+                  ).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })
+                : ""}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Right column: Tabs and content */}
       <div className="w-full lg:w-3/4">
-        <ReadmeSection />
+        {profileData?.readmeContent[0]?.fileContent && (
+          <ReadmeSection
+            content={profileData.readmeContent[0].fileContent}
+            username={(params.username ?? "") as string}
+          />
+        )}
         <Tabs defaultValue="overview" className="w-full mt-6">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -756,9 +933,11 @@ export default function Page() {
                 <Card key={repo.id} className="flex flex-col h-full">
                   <CardHeader className="flex-grow">
                     <div className="flex justify-between items-start">
-                      <CardTitle className="text-blue-500 hover:underline cursor-pointer text-lg flex items-center">
-                        {repo.name}
-                      </CardTitle>
+                      <Link href={`/${params.username}/${repo.slug}`}>
+                        <CardTitle className="text-blue-500 hover:underline cursor-pointer text-lg flex items-center">
+                          {repo.name}
+                        </CardTitle>
+                      </Link>
                       <AssetSheet repo={repo} />
                     </div>
                     <CardDescription className="text-sm mt-1">
@@ -911,7 +1090,20 @@ export default function Page() {
                 </Button>
               </div>
             </div>
-            <RepositoryList repositories={filteredRepositories} />
+            {repoLoading ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="flex items-center gap-2">
+                  <RefreshCcw className="h-4 w-4 animate-spin" />
+                  <span>Loading repositories...</span>
+                </div>
+              </div>
+            ) : (
+              <RepositoryList
+                repositories={filteredRepositories}
+                isOwnProfile={isOwnProfile}
+                username={(params.username ?? "") as string}
+              />
+            )}
           </TabsContent>
           <TabsContent value="tokens" className="mt-6">
             <Card>
