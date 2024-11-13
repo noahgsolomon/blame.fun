@@ -5,6 +5,7 @@ import { useUserStore } from "./stores/user-store";
 import { gql, useQuery } from "@apollo/client";
 import { GetDataQuery } from "@/__generated__/graphql";
 import { useRouter } from "next/navigation";
+import { GET_CURRENT_USER, GET_USER_PROFILE } from "@/lib/queries";
 
 export default function DataProvider({
   children,
@@ -15,17 +16,7 @@ export default function DataProvider({
   const setUser = useUserStore((state) => state.setUser);
   const setLoading = useUserStore((state) => state.setLoading);
 
-  const { data, loading, error, refetch } = useQuery<GetDataQuery>(gql`
-    query GetData {
-      currentUser {
-        id
-        username
-        image
-        createdAt
-        updatedAt
-      }
-    }
-  `);
+  const { data, loading, error, refetch } = useQuery(GET_CURRENT_USER);
 
   useEffect(() => {
     console.log(data);

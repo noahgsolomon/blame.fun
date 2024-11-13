@@ -9,9 +9,9 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Code Together",
-  description: "Code w/ ur homies",
-  keywords: ["interactive coding"],
+  title: "Blame.fun",
+  description: "Make coding fun again",
+  keywords: ["coding", "fun", "programming", "web3", "blockchain", "solana"],
   publisher: "Noah Solomon",
   creator: "Noah Solomon",
   authors: [{ name: "Noah Solomon", url: "https://x.com/noahgsolomon" }],

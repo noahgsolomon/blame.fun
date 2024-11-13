@@ -9,6 +9,12 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Inter';
+  src: url('./fonts/Inter-Regular.woff2');
+  font-weight: normal;
+  font-style: normal;
+}
 
 
 @layer utilities {
@@ -21,7 +27,7 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
+    --card: 0 0% 98%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;

@@ -11,9 +11,6 @@ interface ThemeProviderProps {
 }
 
 function ThemeWrapper({ children }: { children: ReactNode }) {
-  const { theme, resolvedTheme } = useTheme();
-  const appearance = (resolvedTheme || theme) as "light" | "dark";
-
   return (
     <>
       {children}
@@ -34,7 +31,7 @@ export function Providers({ children }: ThemeProviderProps) {
   }
 
   return (
-    <NextThemeProvider attribute="class">
+    <NextThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <ThemeWrapper>
         <ApolloProvider client={client}>{children}</ApolloProvider>
       </ThemeWrapper>

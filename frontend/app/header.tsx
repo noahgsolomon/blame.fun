@@ -26,9 +26,12 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   Wallet,
+  Sun,
+  Moon,
 } from "lucide-react";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTrigger,
@@ -56,6 +59,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 
 interface Transaction {
   id: string;
@@ -143,6 +147,7 @@ export default function Header() {
   const { user } = useUserStore();
   const [isCommandOpen, setIsCommandOpen] = React.useState(false);
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -158,7 +163,7 @@ export default function Header() {
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
+      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setIsCommandOpen((open) => !open);
       }
@@ -186,7 +191,8 @@ export default function Header() {
               onClick={() => setIsCommandOpen(true)}
             />
             <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-              /
+              {navigator.platform.toLowerCase().includes("mac") ? "⌘" : "Ctrl"}{" "}
+              K
             </kbd>
           </div>
         </div>
@@ -285,12 +291,15 @@ export default function Header() {
               </SheetHeader>
               <div className="py-4 space-y-4">
                 <div className="space-y-1">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2"
-                  >
-                    <User className="h-4 w-4" /> Your profile
-                  </Button>
+                  <SheetClose asChild>
+                    <Button
+                      onClick={() => router.push(`/${user?.username}`)}
+                      className="text-left w-full justify-start gap-2"
+                      variant="ghost"
+                    >
+                      <User className="h-4 w-4" /> Your profile
+                    </Button>
+                  </SheetClose>
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-2"
@@ -318,6 +327,26 @@ export default function Header() {
                     onClick={() => router.push("/settings")}
                   >
                     <Settings className="h-4 w-4" /> Settings
+                  </Button>
+                </div>
+                <Separator />
+                <div className="space-y-1">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2"
+                    onClick={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
+                  >
+                    {theme === "dark" ? (
+                      <>
+                        <Sun className="h-4 w-4" /> Light mode
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="h-4 w-4" /> Dark mode
+                      </>
+                    )}
                   </Button>
                 </div>
                 <Separator />
