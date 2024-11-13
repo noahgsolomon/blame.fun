@@ -10,6 +10,8 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
+    field :user, Types::UserType, null: false
+
     field :tree, [Types::GitTreeEntryType], null: true do
       argument :path, String, required: false, default_value: ""
       argument :ref, String, required: false, default_value: "main"
@@ -23,6 +25,10 @@ module Types
     field :tree_entry_details, [Types::GitTreeEntryDetailType], null: true do
       argument :path, String, required: false, default_value: ""
       argument :ref, String, required: false, default_value: "main"
+    end
+
+    def user
+      object.user
     end
 
     def tree(path: "", ref: "main")
