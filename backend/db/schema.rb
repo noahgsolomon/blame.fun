@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_11_11_155935) do
+ActiveRecord::Schema[8.0].define(version: 2024_11_12_211738) do
   create_table "repositories", force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -30,6 +30,12 @@ ActiveRecord::Schema[8.0].define(version: 2024_11_11_155935) do
     t.string "email", null: false
     t.string "password_digest"
     t.string "username", null: false
+    t.string "location"
+    t.text "bio"
+    t.string "twitter"
+    t.string "github"
+    t.string "website"
+    t.string "avatar"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["username"], name: "index_users_on_username", unique: true
   end
