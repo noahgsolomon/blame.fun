@@ -37,6 +37,7 @@ const buttonVariants = cva(
           "bg-yellow-200/70 text-yellow-700 hover:bg-yellow-200/90 dark:bg-yellow-600/40 dark:text-yellow-200 dark:hover:bg-yellow-600/50",
         purple:
           "bg-purple-200/70 text-purple-700 hover:bg-purple-200/90 dark:bg-purple-600/40 dark:text-purple-200 dark:hover:bg-purple-600/50",
+        pink: "bg-pink-200/70 text-pink-700 hover:bg-pink-200/90 dark:bg-pink-600/40 dark:text-pink-200 dark:hover:bg-pink-600/50",
       },
     },
     compoundVariants: [
@@ -71,6 +72,12 @@ const buttonVariants = cva(
           "bg-purple-100/50 text-purple-700 hover:bg-purple-200/50 dark:bg-purple-900/50 dark:text-purple-300 dark:hover:bg-purple-800/50",
       },
       {
+        color: "pink",
+        variant: "soft",
+        className:
+          "bg-pink-100/50 text-pink-700 hover:bg-pink-200/50 dark:bg-pink-900/50 dark:text-pink-300 dark:hover:bg-pink-800/50",
+      },
+      {
         color: "red",
         variant: "outline",
         className:
@@ -100,6 +107,12 @@ const buttonVariants = cva(
         className:
           "border-purple-300 text-purple-700 hover:bg-purple-100/50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/50",
       },
+      {
+        color: "pink",
+        variant: "outline",
+        className:
+          "border-pink-300 text-pink-700 hover:bg-pink-100/50 dark:border-pink-700 dark:text-pink-300 dark:hover:bg-pink-900/50",
+      },
     ],
     defaultVariants: {
       variant: "default",
@@ -113,7 +126,7 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
-  color?: "red" | "blue" | "green" | "yellow" | "purple";
+  color?: "red" | "blue" | "green" | "yellow" | "purple" | "pink";
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
