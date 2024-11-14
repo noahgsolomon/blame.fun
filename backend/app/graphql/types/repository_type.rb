@@ -100,7 +100,6 @@ module Types
       entries = []
       begin
         commit = object.git_repository.rev_parse(ref)
-        Rails.logger.info "Found commit: #{commit.oid[0..7]} - #{commit.message.split("\n").first}"
         tree = commit.tree
 
         # Handle the case where path points to a file
@@ -118,68 +117,45 @@ module Types
         end
 
         current_tree = tree
-        # If path is provided, traverse to that directory
         unless path.empty?
           Rails.logger.info "Traversing path: #{path}"
           path.split('/').each do |segment|
             entry = current_tree[segment]
             return [] unless entry
             current_tree = object.git_repository.lookup(entry[:oid])
-            Rails.logger.info "Traversed to #{segment}: #{entry[:oid][0..7]}"
           end
         end
 
         current_tree.each_entry do |entry|
-          Rails.logger.info "Processing entry: #{entry[:name]} (#{entry[:type]})"
-          
           size = nil
           if entry[:type] == :blob
             blob = object.git_repository.lookup(entry[:oid])
             size = blob.size
-            Rails.logger.info "Blob size for #{entry[:name]}: #{size} bytes"
           end
 
           entry_path = path.empty? ? entry[:name] : File.join(path, entry[:name])
-          Rails.logger.info "Looking for commits for path: #{entry_path}"
           
-          # Initialize walker for each entry
-          walker = Rugged::Walker.new(object.git_repository)
-          walker.sorting(Rugged::SORT_DATE | Rugged::SORT_TOPO)
-          walker.push(commit.oid)
-          
-          # Find last commit that modified this path
+          # Use git log with --follow to get the actual last commit for this file
           last_commit = nil
-          commit_count = 0
-          walker.each do |c|
-            commit_count += 1
-            Rails.logger.debug "Checking commit #{c.oid[0..7]}: #{c.message.split("\n").first}"
-            begin
-              c.tree.path(entry_path)
-              last_commit = c
-              Rails.logger.info "Found last commit for #{entry_path}: #{c.oid[0..7]} - #{c.message.split("\n").first}"
-              break
-            rescue Rugged::TreeError
-              next
-            end
-          end
+          cmd = ["git", "--git-dir=#{object.git_path}", "log", "-1", "--format=%H", "--follow", "#{ref}", "--", entry_path]
+          commit_sha = `#{cmd.join(' ')}`.strip
           
-          Rails.logger.info "Checked #{commit_count} commits for #{entry_path}"
-          if last_commit.nil?
-            Rails.logger.warn "No commit found for #{entry_path}"
+          if !commit_sha.empty?
+            last_commit = object.git_repository.lookup(commit_sha)
           end
 
-          Rails.logger.info "Last commit: #{last_commit.inspect}"
-
-          entries << {
-            size: size,
-            file: entry[:name],
-            path: entry_path,
-            type: entry[:type].to_s,
-            msg: last_commit.message,
-            name: last_commit.author[:name],
-            date: last_commit.author[:time],
-            oid: last_commit.oid[0..7]
-          }
+          if last_commit
+            entries << {
+              size: size,
+              file: entry[:name],
+              path: entry_path,
+              type: entry[:type].to_s,
+              msg: last_commit.message,
+              name: last_commit.author[:name],
+              date: last_commit.author[:time],
+              oid: last_commit.oid[0..7]
+            }
+          end
         end
       rescue => e
         Rails.logger.error "Failed to get tree entry details: #{e.message}"
@@ -187,8 +163,6 @@ module Types
         []
       end
       
-      Rails.logger.info "Completed tree_entry_details, found #{entries.length} entries"
-      Rails.logger.info "Entries: #{entries}"
       entries
     end
   end
