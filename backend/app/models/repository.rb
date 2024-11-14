@@ -49,6 +49,10 @@ class Repository < ApplicationRecord
     Rugged::Repository.init_at(git_path, :bare)
     Rails.logger.info "Repository initialized"
     
+    # Set up HEAD to point to main branch
+    head_path = File.join(git_path, 'HEAD')
+    File.write(head_path, "ref: refs/heads/main\n")
+    
     export_file = File.join(git_path, 'git-daemon-export-ok')
     FileUtils.touch(export_file)
     Rails.logger.info "Export file created at: #{export_file}"
