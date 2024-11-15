@@ -38,6 +38,8 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { MapPin } from "lucide-react";
+import { StarButton } from "@/components/star-button";
+import { FileSearch } from "@/components/file-search";
 
 type GitTreeEntry = {
   name: string;
@@ -46,7 +48,7 @@ type GitTreeEntry = {
   path: string;
 };
 
-type GitTreeEntryDetail = {
+export type GitTreeEntryDetail = {
   file: string;
   name: string;
   type: "blob" | "tree";
@@ -77,6 +79,9 @@ type Repository = {
   treeEntryDetails: GitTreeEntryDetail[];
   fileContent?: string;
   user: User;
+  starsCount: number;
+  stargazers: User[];
+  isStarredByMe: boolean;
 };
 
 export default function RepositoryView() {
@@ -100,8 +105,9 @@ export default function RepositoryView() {
   if (loading) return null;
 
   const repository: Repository = data?.repositories[0];
+  console.log("repository", repository);
 
-  if (!repository || error) {
+  if ((!repository && !loading) || error) {
     console.log(error);
     router.push("/404");
     return null;
@@ -305,14 +311,12 @@ export default function RepositoryView() {
       <div className="flex items-center justify-between mb-6">
         <BreadcrumbNav />
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" className="space-x-2">
-            <Star className="h-4 w-4" />
-            <span>Star</span>
-            <span className="px-2 py-0.5 rounded-full bg-muted text-xs">
-              595
-            </span>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
+          <StarButton
+            repositoryId={repository.id}
+            starsCount={repository.starsCount}
+            isStarred={repository.isStarredByMe}
+            showCount={true}
+          />
         </div>
       </div>
 
@@ -334,18 +338,10 @@ export default function RepositoryView() {
             <div className="flex items-center space-x-2">
               {pathParams.length === 0 && (
                 <div className="hidden lg:flex items-center space-x-2">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Go to file"
-                      className="pl-8 h-9 w-[300px]"
-                    />
-                  </div>
-                  <Button variant="outline" size="sm" className="space-x-2">
-                    <Plus className="h-4 w-4" />
-                    <span>Add file</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
+                  <FileSearch
+                    username={username}
+                    repositorySlug={repositorySlug}
+                  />
                 </div>
               )}
               <DropdownMenu>
