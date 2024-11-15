@@ -38,8 +38,13 @@ type FileSearch = {
 export function FileSearch({ username, repositorySlug }: FileSearchProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
-  const debouncedQuery = useDebounce(inputValue, 500);
+  const debouncedQuery = useDebounce(inputValue, 300);
   const router = useRouter();
+
+  // Keep track of previous results
+  const [previousResults, setPreviousResults] = React.useState<
+    GitTreeEntryDetail[]
+  >([]);
 
   const { data, loading } = useQuery(SEARCH_FILES, {
     variables: {
@@ -48,9 +53,16 @@ export function FileSearch({ username, repositorySlug }: FileSearchProps) {
       query: debouncedQuery,
     },
     skip: !open || debouncedQuery.length < 2,
+    onCompleted: (data) => {
+      if (data?.repositories[0]?.searchFiles) {
+        setPreviousResults(data.repositories[0].searchFiles);
+      }
+    },
   });
-  const fileSearch: FileSearch = data?.repositories[0];
-  const hasResults = fileSearch?.searchFiles?.length > 0;
+
+  const fileSearch = data?.repositories[0];
+  const searchResults = fileSearch?.searchFiles || previousResults;
+  const hasResults = searchResults.length > 0;
 
   console.log("fileSearch", fileSearch);
 
@@ -77,95 +89,82 @@ export function FileSearch({ username, repositorySlug }: FileSearchProps) {
           onValueChange={setInputValue}
         />
         <CommandList className="max-h-[60vh] overflow-y-auto">
-          {loading && (
-            <div className="py-6 text-center text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
-              Searching...
-            </div>
-          )}
-
-          {!loading && debouncedQuery.length < 2 && (
+          {inputValue.length < 2 ? (
             <div className="py-6 text-center text-sm text-muted-foreground">
               Type at least 2 characters to search...
             </div>
-          )}
-
-          {!loading && debouncedQuery.length >= 2 && !hasResults && (
+          ) : !hasResults ? (
             <div className="py-6 text-center text-sm text-muted-foreground">
-              No files found matching "{debouncedQuery}"
+              No files found matching "{inputValue}"
             </div>
-          )}
-
-          {fileSearch && (
+          ) : (
             <div className="divide-y">
-              {fileSearch.searchFiles.map(
-                (entry: GitTreeEntryDetail, index: number) => (
+              {searchResults.map((entry: GitTreeEntryDetail) => (
+                <div
+                  key={entry.path}
+                  className={`flex flex-col ${
+                    entry === searchResults[searchResults.length - 1]
+                      ? "rounded-b-lg"
+                      : ""
+                  }`}
+                >
                   <div
                     key={entry.path}
-                    className={`flex flex-col ${
-                      index === fileSearch.searchFiles.length - 1
-                        ? "rounded-b-lg"
-                        : ""
-                    }`}
+                    onSelect={() => handleSelect(entry.path)}
+                    className="p-0"
                   >
-                    <div
-                      key={entry.path}
-                      onSelect={() => handleSelect(entry.path)}
-                      className="p-0"
+                    <Link
+                      href={`/${username}/${repositorySlug}/${entry.path}`}
+                      className={`flex items-center px-3 py-2 w-full hover:bg-accent cursor-pointer group ${
+                        entry === searchResults[searchResults.length - 1]
+                          ? "rounded-b-lg"
+                          : ""
+                      }`}
                     >
-                      <Link
-                        href={`/${username}/${repositorySlug}/${entry.path}`}
-                        className={`flex items-center px-3 py-2 w-full hover:bg-accent cursor-pointer group ${
-                          index === fileSearch.searchFiles.length - 1
-                            ? "rounded-b-lg"
-                            : ""
-                        }`}
-                      >
-                        <div className="flex items-center w-full">
-                          <img
-                            src={getFileIcon(entry.file, entry.type === "tree")}
-                            className={`${
-                              entry.type === "tree" ? "h-5 w-5" : "h-4 w-4"
-                            } mr-2`}
-                            alt=""
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col max-w-[50ch]">
-                              <span className="text-xs text-muted-foreground truncate">
-                                {entry.path.substring(
-                                  0,
-                                  entry.path.lastIndexOf(entry.file)
-                                )}
-                              </span>
-                              <span className="text-sm font-medium truncate">
-                                {entry.file}
-                              </span>
-                            </div>
+                      <div className="flex items-center w-full">
+                        <img
+                          src={getFileIcon(entry.file, entry.type === "tree")}
+                          className={`${
+                            entry.type === "tree" ? "h-5 w-5" : "h-4 w-4"
+                          } mr-2`}
+                          alt=""
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col max-w-[50ch]">
+                            <span className="text-xs text-muted-foreground truncate">
+                              {entry.path.substring(
+                                0,
+                                entry.path.lastIndexOf(entry.file)
+                              )}
+                            </span>
+                            <span className="text-sm font-medium truncate">
+                              {entry.file}
+                            </span>
                           </div>
-                          {entry.msg && (
-                            <div className="flex items-center justify-between flex-1 min-w-0 px-4">
-                              <span className="text-xs text-muted-foreground truncate">
-                                {entry.msg.split("\n")[0]}
-                              </span>
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                {entry.date &&
-                                  new Date(entry.date).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      year: "numeric",
-                                      month: "short",
-                                      day: "numeric",
-                                    }
-                                  )}
-                              </span>
-                            </div>
-                          )}
                         </div>
-                      </Link>
-                    </div>
+                        {entry.msg && (
+                          <div className="flex items-center justify-between flex-1 min-w-0 px-4">
+                            <span className="text-xs text-muted-foreground truncate">
+                              {entry.msg.split("\n")[0]}
+                            </span>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {entry.date &&
+                                new Date(entry.date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  }
+                                )}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   </div>
-                )
-              )}
+                </div>
+              ))}
             </div>
           )}
         </CommandList>
