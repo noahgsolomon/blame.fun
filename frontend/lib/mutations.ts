@@ -33,3 +33,29 @@ export const UPDATE_USER = gql`
     }
   }
 `;
+
+export const STAR_REPOSITORY = gql`
+  mutation StarRepository($repositoryId: ID!) {
+    starRepository(repositoryId: $repositoryId) {
+      repository {
+        id
+        starsCount
+        isStarredByMe
+      }
+      errors
+    }
+  }
+`;
+
+export const UNSTAR_REPOSITORY = gql`
+  mutation UnstarRepository($repositoryId: ID!) {
+    unstarRepository(repositoryId: $repositoryId) {
+      repository {
+        id
+        starsCount
+        isStarredByMe
+      }
+      errors
+    }
+  }
+`;
