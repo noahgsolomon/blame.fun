@@ -10,6 +10,14 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
+    field :stars_count, Integer, null: false
+    field :is_starred_by_me, Boolean, null: false
+    field :stargazers, [Types::UserType], null: false
+    
+    field :search_files, [Types::GitTreeEntryDetailType], null: true do
+      argument :query, String, required: true
+    end
+
     field :user, Types::UserType, null: false
 
     field :tree, [Types::GitTreeEntryType], null: true do
@@ -30,6 +38,56 @@ module Types
     def user
       object.user
     end
+
+    def search_files(query:)
+      return [] unless object.git_repository
+      return [] if query.blank?
+
+      entries = []
+      begin
+        commit = object.git_repository.rev_parse('main')
+        tree = commit.tree
+
+        # Recursively search through all files
+        search_tree(tree, '', query.strip.downcase, entries)
+      rescue => e
+        Rails.logger.error "Failed to search files: #{e.message}"
+        []
+      end
+      entries
+    end
+
+    def search_tree(tree, current_path, query, entries)
+      tree.each_entry do |entry|
+        entry_path = current_path.empty? ? entry[:name] : File.join(current_path, entry[:name])
+        
+        if entry[:type] == :tree
+          subtree = object.git_repository.lookup(entry[:oid])
+          search_tree(subtree, entry_path, query, entries)
+        elsif entry[:name].downcase.include?(query) || entry_path.downcase.include?(query)
+          # Get commit info for the file
+          cmd = ["git", "--git-dir=#{object.git_path}", "log", "-1", "--format=%H", "--follow", "main", "--", entry_path]
+          commit_sha = `#{cmd.join(' ')}`.strip
+          
+          if !commit_sha.empty?
+            last_commit = object.git_repository.lookup(commit_sha)
+            blob = object.git_repository.lookup(entry[:oid])
+            
+            entries << {
+              size: blob.size,
+              file: entry[:name],
+              path: entry_path,
+              type: entry[:type].to_s,
+              msg: last_commit.message,
+              name: last_commit.author[:name],
+              date: last_commit.author[:time],
+              oid: last_commit.oid[0..7]
+            }
+          end
+        end
+      end
+    end
+
 
     def tree(path: "", ref: "main")
       return [] unless object.git_repository
@@ -165,5 +223,19 @@ module Types
       
       entries
     end
+
+    def stars_count
+      object.stars.count
+    end
+    
+    def is_starred_by_me
+      return false unless context[:current_user]
+      object.starred_by?(context[:current_user])
+    end
+    
+    def stargazers
+      object.stargazers
+    end
+
   end
 end

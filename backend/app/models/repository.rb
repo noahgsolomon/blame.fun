@@ -7,6 +7,9 @@ class Repository < ApplicationRecord
   validates :slug, presence: true, uniqueness: { scope: :user_id }
   validates :description, presence: true
 
+  has_many :stars, dependent: :destroy
+  has_many :stargazers, through: :stars, source: :user
+
   # Initialize git repository after creation
   after_commit :initialize_git_repository, on: :create
   before_destroy :cleanup_git_repository
@@ -33,6 +36,11 @@ class Repository < ApplicationRecord
     all.each do |repo|
       repo.destroy
     end
+  end
+
+  def starred_by?(user)
+    return false unless user
+    stars.exists?(user_id: user.id)
   end
 
   private
