@@ -293,19 +293,26 @@ export default function Header() {
                 <div className="space-y-1">
                   <SheetClose asChild>
                     <Button
-                      onClick={() => router.push(`/${user?.username}`)}
+                      onClick={() =>
+                        router.push(`/${user?.username}?tab=overview`)
+                      }
                       className="text-left w-full justify-start gap-2"
                       variant="ghost"
                     >
                       <User className="h-4 w-4" /> Your profile
                     </Button>
                   </SheetClose>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2"
-                  >
-                    <BookMarked className="h-4 w-4" /> Your repositories
-                  </Button>
+                  <SheetClose asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2"
+                      onClick={() =>
+                        router.push(`/${user?.username}?tab=repositories`)
+                      }
+                    >
+                      <BookMarked className="h-4 w-4" /> Your repositories
+                    </Button>
+                  </SheetClose>
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-2"
