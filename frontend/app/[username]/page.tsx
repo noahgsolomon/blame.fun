@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_USER_PROFILE, GET_USER_REPOSITORIES } from "@/lib/queries";
 import { useUserStore } from "@/app/stores/user-store";
@@ -188,6 +188,7 @@ interface Repository {
   volume24h: number;
   circulatingSupply: number;
   totalSupply: number;
+  isStarredByMe: boolean;
 }
 
 const EmptyRepositories = ({ isOwnProfile }: { isOwnProfile: boolean }) => {
@@ -713,7 +714,8 @@ export default function Page() {
         name: repo.name,
         description: repo.description,
         language: "TypeScript", // This would come from backend eventually
-        stars: 0, // These would come from backend eventually
+        stars: repo.starsCount,
+        isStarredByMe: repo.isStarredByMe,
         forks: 0,
         slug: repo.slug,
         updatedAt: repo.updatedAt,
@@ -783,7 +785,13 @@ export default function Page() {
     }
   };
 
-  if (profileLoading || profileData.user.length === 0) return null;
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
+  const validTabs = ["overview", "repositories", "tokens", "transactions"];
+  const currentTab = validTabs.includes(tab || "") ? tab : "overview";
+
+  if (profileLoading || !profileData || profileData.user.length === 0)
+    return null;
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 p-4">
@@ -920,14 +928,20 @@ export default function Page() {
             username={(params.username ?? "") as string}
           />
         )}
-        <Tabs defaultValue="overview" className="w-full mt-6">
+        <Tabs
+          value={currentTab ?? "overview"}
+          onValueChange={(newValue) => {
+            router.push(`/${params.username}?tab=${newValue}`);
+          }}
+        >
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="repositories">Repositories</TabsTrigger>
             <TabsTrigger value="tokens">Tokens</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
           </TabsList>
-          <TabsContent value="overview" className="mt-6">
+
+          <TabsContent value="overview">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {repositories.slice(0, 4).map((repo) => (
                 <Card key={repo.id} className="flex flex-col h-full">
@@ -948,7 +962,13 @@ export default function Page() {
                     <div className="flex items-center text-xs text-muted-foreground mb-4">
                       <div className="w-2 h-2 rounded-full bg-yellow-400 mr-2"></div>
                       <span className="mr-4">{repo.language}</span>
-                      <Star className="mr-1 h-3 w-3" />
+                      <Star
+                        className={`mr-1 h-3 w-3 ${
+                          repo.isStarredByMe
+                            ? "fill-yellow-400 text-yellow-400"
+                            : ""
+                        }`}
+                      />
                       <span className="mr-4">{repo.stars}</span>
                       <GitFork className="mr-1 h-3 w-3" />
                       <span>{repo.forks}</span>
@@ -1066,7 +1086,7 @@ export default function Page() {
               <ContributionCalendar />
             </div>
           </TabsContent>
-          <TabsContent value="repositories" className="mt-6">
+          <TabsContent value="repositories">
             <div className="flex flex-col sm:flex-row items-center mb-4 gap-2">
               <div className="relative flex-grow w-full sm:w-auto">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 transform -translate-y-1/2 text-gray-400" />
@@ -1105,7 +1125,7 @@ export default function Page() {
               />
             )}
           </TabsContent>
-          <TabsContent value="tokens" className="mt-6">
+          <TabsContent value="tokens">
             <Card>
               <CardHeader>
                 <CardTitle>Your Tokens</CardTitle>
@@ -1147,7 +1167,7 @@ export default function Page() {
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="transactions" className="mt-6">
+          <TabsContent value="transactions">
             <Card>
               <CardHeader>
                 <CardTitle>Transaction History</CardTitle>
