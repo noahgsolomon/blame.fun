@@ -182,7 +182,7 @@ export default function Header() {
             <Globe className="h-4 w-4" />
           </Link>
 
-          <div className="relative w-full max-w-[16rem]">
+          {/* <div className="relative w-full max-w-[16rem]">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
@@ -194,7 +194,7 @@ export default function Header() {
               {navigator.platform.toLowerCase().includes("mac") ? "⌘" : "Ctrl"}{" "}
               K
             </kbd>
-          </div>
+          </div> */}
         </div>
         <div className="flex items-center space-x-2">
           <TooltipProvider>
