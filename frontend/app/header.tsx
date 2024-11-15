@@ -161,16 +161,16 @@ export default function Header() {
     }
   };
 
-  React.useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setIsCommandOpen((open) => !open);
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+  // React.useEffect(() => {
+  //   const down = (e: KeyboardEvent) => {
+  //     if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+  //       e.preventDefault();
+  //       setIsCommandOpen((open) => !open);
+  //     }
+  //   };
+  //   document.addEventListener("keydown", down);
+  //   return () => document.removeEventListener("keydown", down);
+  // }, []);
 
   if (!user) return null;
 
