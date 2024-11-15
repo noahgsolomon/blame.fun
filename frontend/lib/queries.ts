@@ -10,6 +10,15 @@ export const GET_REPOSITORY = gql`
       gitUrl
       createdAt
       updatedAt
+      starsCount
+      isStarredByMe
+      stargazers {
+        id
+        username
+        avatar
+        name
+        bio
+      }
       user {
         name
         username
@@ -95,6 +104,26 @@ export const GET_USER_REPOSITORIES = gql`
       slug
       createdAt
       updatedAt
+      starsCount
+      isStarredByMe
+    }
+  }
+`;
+
+export const SEARCH_FILES = gql`
+  query SearchFiles($username: String!, $slug: String!, $query: String!) {
+    repositories(username: $username, slug: $slug) {
+      id
+      searchFiles(query: $query) {
+        path
+        type
+        file
+        size
+        msg
+        name
+        date
+        oid
+      }
     }
   }
 `;
