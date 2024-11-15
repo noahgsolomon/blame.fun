@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_11_12_211738) do
+ActiveRecord::Schema[8.0].define(version: 2024_11_15_001549) do
   create_table "repositories", force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -19,7 +19,18 @@ ActiveRecord::Schema[8.0].define(version: 2024_11_12_211738) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "bare"
+    t.integer "stars", default: 0
     t.index ["user_id"], name: "index_repositories_on_user_id"
+  end
+
+  create_table "stars", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "repository_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["repository_id"], name: "index_stars_on_repository_id"
+    t.index ["user_id", "repository_id"], name: "index_stars_on_user_id_and_repository_id", unique: true
+    t.index ["user_id"], name: "index_stars_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -41,4 +52,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_11_12_211738) do
   end
 
   add_foreign_key "repositories", "users"
+  add_foreign_key "stars", "repositories"
+  add_foreign_key "stars", "users"
 end
