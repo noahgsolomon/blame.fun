@@ -14,5 +14,32 @@ module Types
     field :github, String, null: true
     field :website, String, null: true
     field :avatar, String, null: true
+    field :followers_count, Integer, null: false
+    field :following_count, Integer, null: false
+    field :is_followed_by_me, Boolean, null: false
+
+    field :followers, [Types::UserType], null: false
+    field :following, [Types::UserType], null: false
+
+    def followers_count
+      object.followers.count
+    end
+
+    def following_count
+      object.following.count
+    end
+
+    def followers
+      object.followers
+    end
+
+    def following
+      object.following
+    end
+
+    def is_followed_by_me
+      return false unless context[:current_user]
+      object.followed_by?(context[:current_user])
+    end
   end
 end

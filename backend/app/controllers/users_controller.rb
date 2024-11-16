@@ -9,13 +9,13 @@ class UsersController < ApplicationController
 
   def create
     user = User.new(user_params)
-    user.image = "icon-#{rand(0..12)}.png"
+    user.avatar = "icon-#{rand(0..12)}.png"
     
     if user.save
       set_auth_token(user)
       render json: {
         id: user.id,
-        name: user.name,
+        username: user.username,
         email: user.email
       }, status: :created
     else
