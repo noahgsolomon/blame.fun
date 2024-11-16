@@ -233,7 +233,15 @@ export default function RepositoryView() {
 
     return (
       <div className="flex items-center space-x-2">
-        <HoverCard openDelay={250}>
+        <Link className="flex items-center" href={`/${username}`}>
+          <Avatar className="size-6">
+            <AvatarImage src={repository.user.avatar} alt={username} />
+            <AvatarFallback>
+              {username.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
+        {/* <HoverCard openDelay={250}>
           <HoverCardTrigger asChild>
             <Link className="flex items-center" href={`/${username}`}>
               <Avatar className="size-6">
@@ -275,7 +283,7 @@ export default function RepositoryView() {
               </div>
             </div>
           </HoverCardContent>
-        </HoverCard>
+        </HoverCard> */}
         <span className="text-muted-foreground">/</span>
         <Link
           href={`/${username}/${repositorySlug}`}
