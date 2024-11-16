@@ -4,6 +4,21 @@ module Types
 
     field :user, resolver: Resolvers::UserSearch
 
+    field :starred_repositories, [Types::RepositoryType], null: false do
+      argument :username, String, required: true
+    end
+
+    def starred_repositories(username:)
+      user = User.find_by(username: username)
+      Rails.logger.info "Found user: #{user&.id}"
+      return [] unless user
+      
+      repos = user.stars.map(&:repository)
+      
+      Rails.logger.info "Found starred repos: #{repos.count}"
+      repos
+    end
+
     field :node, Types::NodeType, null: true, description: "Fetches an object given its ID." do
       argument :id, ID, required: true, description: "ID of the object."
     end

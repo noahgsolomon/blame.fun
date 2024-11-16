@@ -127,3 +127,17 @@ export const SEARCH_FILES = gql`
     }
   }
 `;
+
+export const GET_USER_STARRED_REPOSITORIES = gql`
+  query GetUserStarredRepositories($username: String!) {
+    starredRepositories(username: $username) {
+      id
+      name
+      description
+      slug
+      starsCount
+      isStarredByMe
+      updatedAt
+    }
+  }
+`;

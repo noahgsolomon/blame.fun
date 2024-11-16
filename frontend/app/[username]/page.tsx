@@ -3,7 +3,11 @@
 import * as React from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_USER_PROFILE, GET_USER_REPOSITORIES } from "@/lib/queries";
+import {
+  GET_USER_PROFILE,
+  GET_USER_REPOSITORIES,
+  GET_USER_STARRED_REPOSITORIES,
+} from "@/lib/queries";
 import { useUserStore } from "@/app/stores/user-store";
 import Markdown from "react-markdown";
 import {
@@ -273,7 +277,11 @@ const RepositoryList = ({
             <div className="flex items-center text-xs text-muted-foreground mb-4">
               <div className="w-2 h-2 rounded-full bg-yellow-400 mr-2"></div>
               <span className="mr-4">{repo.language}</span>
-              <Star className="mr-1 h-3 w-3" />
+              <Star
+                className={`mr-1 h-3 w-3 ${
+                  repo.isStarredByMe ? "text-yellow-500 fill-yellow-500" : ""
+                }`}
+              />
               <span className="mr-4">{repo.stars}</span>
               <GitFork className="mr-1 h-3 w-3" />
               <span>{repo.forks}</span>
@@ -692,6 +700,18 @@ export default function Page() {
     }
   );
 
+  const { data: starredRepoData, loading: starredRepoLoading } = useQuery(
+    GET_USER_STARRED_REPOSITORIES,
+    {
+      variables: { username: params.username },
+      skip: !params.username || user?.username !== params.username,
+    }
+  );
+
+  const [starredRepositories, setStarredRepositories] = React.useState<
+    Repository[]
+  >([]);
+
   React.useEffect(() => {
     console.log("sup profileData", profileData);
     if (!profileLoading && profileData.user.length === 0) {
@@ -747,9 +767,58 @@ export default function Page() {
     }
   }, [repoData]);
 
+  React.useEffect(() => {
+    if (starredRepoData?.starredRepositories) {
+      const mappedRepos = starredRepoData.starredRepositories.map(
+        (repo: any) => ({
+          id: repo.id,
+          name: repo.name,
+          description: repo.description,
+          language: "TypeScript",
+          stars: repo.starsCount,
+          isStarredByMe: repo.isStarredByMe,
+          forks: 0,
+          slug: repo.slug,
+          updatedAt: repo.updatedAt,
+          tokenSymbol: "TKN",
+          tokenPrice: 0.05,
+          marketCap: 5000000,
+          liquidity: 250000,
+          holders: 2500,
+          topHoldersPercent: 45,
+          snipersCount: 8,
+          maxSnipers: 10,
+          blueChipPercent: 65,
+          rugpullRisk: "Low",
+          auditScore: 95,
+          maxAuditScore: 100,
+          priceChange24h: 12.5,
+          tokenHistory: [
+            { date: "2023-01", price: 0.01 },
+            { date: "2023-02", price: 0.02 },
+            { date: "2023-03", price: 0.03 },
+            { date: "2023-04", price: 0.04 },
+            { date: "2023-05", price: 0.05 },
+          ],
+          volume24h: 500000,
+          circulatingSupply: 100000000,
+          totalSupply: 150000000,
+        })
+      );
+      setStarredRepositories(mappedRepos);
+    }
+  }, [starredRepoData]);
+
   const filteredRepositories = repositories.filter((repo) =>
     repo.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const filteredStarredRepositories = starredRepositories.filter((repo) =>
+    repo.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  console.log("starredRepositories", starredRepositories);
+  console.log("filteredStarredRepositories", filteredStarredRepositories);
 
   const [updateUser] = useMutation(UPDATE_USER);
 
@@ -787,7 +856,12 @@ export default function Page() {
 
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
-  const validTabs = ["overview", "repositories", "tokens", "transactions"];
+  const validTabs = React.useMemo(() => {
+    const baseTabs = ["overview", "repositories", "tokens", "transactions"];
+    return user?.username === params.username
+      ? [...baseTabs, "stars"]
+      : baseTabs;
+  }, [user?.username, params.username]);
   const currentTab = validTabs.includes(tab || "") ? tab : "overview";
 
   if (profileLoading || !profileData || profileData.user.length === 0)
@@ -937,6 +1011,9 @@ export default function Page() {
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="repositories">Repositories</TabsTrigger>
+            {user?.username === params.username && (
+              <TabsTrigger value="stars">Stars</TabsTrigger>
+            )}
             <TabsTrigger value="tokens">Tokens</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
           </TabsList>
@@ -1120,6 +1197,45 @@ export default function Page() {
             ) : (
               <RepositoryList
                 repositories={filteredRepositories}
+                isOwnProfile={isOwnProfile}
+                username={(params.username ?? "") as string}
+              />
+            )}
+          </TabsContent>
+          <TabsContent value="stars">
+            <div className="flex flex-col sm:flex-row items-center mb-4 gap-2">
+              <div className="relative flex-grow w-full sm:w-auto">
+                <Search className="absolute left-2 top-1/2 h-4 w-4 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Find a repository..."
+                  className="pl-8 pr-4 py-2 w-full"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2 mt-2 sm:mt-0">
+                <Button variant="outline" size="sm">
+                  Type
+                </Button>
+                <Button variant="outline" size="sm">
+                  Language
+                </Button>
+                <Button variant="outline" size="sm">
+                  Sort
+                </Button>
+              </div>
+            </div>
+            {starredRepoLoading ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="flex items-center gap-2">
+                  <RefreshCcw className="h-4 w-4 animate-spin" />
+                  <span>Loading starred repositories...</span>
+                </div>
+              </div>
+            ) : (
+              <RepositoryList
+                repositories={filteredStarredRepositories}
                 isOwnProfile={isOwnProfile}
                 username={(params.username ?? "") as string}
               />

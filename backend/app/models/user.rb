@@ -7,6 +7,8 @@ class User < ApplicationRecord
   validates :password, presence: true, on: :create
   validates :email, presence: true, uniqueness: true
   
+  has_many :stars
+  
   def self.authenticate(username, password)
     user = find_by(username: username)
     user&.authenticate(password)
