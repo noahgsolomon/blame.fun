@@ -59,3 +59,29 @@ export const UNSTAR_REPOSITORY = gql`
     }
   }
 `;
+
+export const FOLLOW_USER = gql`
+  mutation FollowUser($username: String!) {
+    followUser(username: $username) {
+      user {
+        id
+        followersCount
+        isFollowedByMe
+      }
+      errors
+    }
+  }
+`;
+
+export const UNFOLLOW_USER = gql`
+  mutation UnfollowUser($username: String!) {
+    unfollowUser(username: $username) {
+      user {
+        id
+        followersCount
+        isFollowedByMe
+      }
+      errors
+    }
+  }
+`;
