@@ -60,6 +60,9 @@ export const GET_USER_PROFILE = gql`
       github
       website
       createdAt
+      followersCount
+      followingCount
+      isFollowedByMe
     }
     repositories(username: $username) {
       id
@@ -80,7 +83,6 @@ export const GET_CURRENT_USER = gql`
     currentUser {
       id
       username
-      image
       createdAt
       updatedAt
       name
@@ -138,6 +140,32 @@ export const GET_USER_STARRED_REPOSITORIES = gql`
       starsCount
       isStarredByMe
       updatedAt
+    }
+  }
+`;
+
+export const GET_USER_FOLLOWERS = gql`
+  query GetUserFollowers($username: String!) {
+    user(username: $username) {
+      followers {
+        id
+        username
+        name
+        avatar
+      }
+    }
+  }
+`;
+
+export const GET_USER_FOLLOWING = gql`
+  query GetUserFollowing($username: String!) {
+    user(username: $username) {
+      following {
+        id
+        username
+        name
+        avatar
+      }
     }
   }
 `;
