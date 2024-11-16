@@ -10,5 +10,7 @@ module Types
 		field :updateRepository, mutation: Mutations::UpdateRepository
 		field :star_repository, mutation: Mutations::StarRepository
     field :unstar_repository, mutation: Mutations::UnstarRepository
+    field :follow_user, mutation: Mutations::FollowUser
+    field :unfollow_user, mutation: Mutations::UnfollowUser
   end
 end
