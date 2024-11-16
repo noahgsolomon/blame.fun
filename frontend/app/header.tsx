@@ -270,7 +270,7 @@ export default function Header() {
           <Sheet>
             <SheetTrigger asChild>
               <Avatar className="h-8 w-8 cursor-pointer">
-                <AvatarImage src={`/${user?.image}`} />
+                <AvatarImage src={user?.avatar} />
                 <AvatarFallback>{user?.username?.[0]}</AvatarFallback>
               </Avatar>
             </SheetTrigger>
@@ -278,7 +278,7 @@ export default function Header() {
               <SheetHeader className="border-b pb-4">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={`/${user?.image}`} />
+                    <AvatarImage src={user?.avatar} />
                     <AvatarFallback>{user?.username?.[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">

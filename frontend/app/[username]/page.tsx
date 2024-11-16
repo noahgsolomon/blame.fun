@@ -7,6 +7,8 @@ import {
   GET_USER_PROFILE,
   GET_USER_REPOSITORIES,
   GET_USER_STARRED_REPOSITORIES,
+  GET_USER_FOLLOWERS,
+  GET_USER_FOLLOWING,
 } from "@/lib/queries";
 import { useUserStore } from "@/app/stores/user-store";
 import Markdown from "react-markdown";
@@ -93,7 +95,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import { UPDATE_USER } from "@/lib/mutations";
+import { FOLLOW_USER, UNFOLLOW_USER, UPDATE_USER } from "@/lib/mutations";
+import { FollowersModal } from "@/components/followers-modal";
 
 interface Transaction {
   id: number;
@@ -195,12 +198,20 @@ interface Repository {
   isStarredByMe: boolean;
 }
 
-const EmptyRepositories = ({ isOwnProfile }: { isOwnProfile: boolean }) => {
+const EmptyRepositories = ({
+  isOwnProfile,
+  pinned = false,
+  starTab = false,
+}: {
+  isOwnProfile: boolean;
+  pinned?: boolean;
+  starTab?: boolean;
+}) => {
   return (
-    <div className="text-center p-6 border rounded-lg bg-card">
+    <div className="text-center p-6 border rounded-lg bg-card w-full">
       <div className="mb-6">
         <Image
-          src="/coin.gif"
+          src={starTab ? "/star.gif" : pinned ? "/cat.gif" : "/coin.gif"}
           alt="No repositories"
           width={120}
           height={120}
@@ -210,33 +221,42 @@ const EmptyRepositories = ({ isOwnProfile }: { isOwnProfile: boolean }) => {
       {isOwnProfile ? (
         <>
           <h3 className="text-lg font-semibold mb-2">
-            You don&apos;t have any repositories yet
+            You don&apos;t have any{" "}
+            {pinned ? "pinned" : starTab ? "starred" : ""} repositories yet
           </h3>
-          <p className="text-muted-foreground mb-6">
-            Repositories are a great way to share your code and work with
-            others.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild>
-              <Link href="/create/repository">
-                <Plus className="mr-2 h-4 w-4" />
-                New repository
-              </Link>
-            </Button>
-            <Button variant="outline">
-              <Upload className="mr-2 h-4 w-4" />
-              Import repository
-            </Button>
-          </div>
+
+          {!starTab && (
+            <>
+              <p className="text-muted-foreground mb-6">
+                Repositories are a great way to share your code and work with
+                others.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild>
+                  <Link href="/create/repository">
+                    <Plus className="mr-2 h-4 w-4" />
+                    New repository
+                  </Link>
+                </Button>
+                <Button variant="outline">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import repository
+                </Button>
+              </div>
+            </>
+          )}
         </>
       ) : (
         <>
           <h3 className="text-lg font-semibold mb-2">
-            This user doesn&apos;t have any repositories yet
+            This user doesn&apos;t have any {pinned ? "pinned" : ""}{" "}
+            repositories yet
           </h3>
-          <p className="text-muted-foreground">
-            When they create repositories, they&apos;ll appear here.
-          </p>
+          {!pinned && (
+            <p className="text-muted-foreground">
+              When they create repositories, they&apos;ll appear here.
+            </p>
+          )}
         </>
       )}
     </div>
@@ -247,13 +267,15 @@ const RepositoryList = ({
   repositories,
   isOwnProfile,
   username,
+  starTab = false,
 }: {
   repositories: Repository[];
   isOwnProfile: boolean;
   username: string;
+  starTab?: boolean;
 }) => {
   if (!repositories.length) {
-    return <EmptyRepositories isOwnProfile={isOwnProfile} />;
+    return <EmptyRepositories isOwnProfile={isOwnProfile} starTab={starTab} />;
   }
 
   return (
@@ -712,6 +734,19 @@ export default function Page() {
     Repository[]
   >([]);
 
+  const { data: followersData } = useQuery(GET_USER_FOLLOWERS, {
+    variables: { username: params.username },
+    skip: !params.username,
+  });
+
+  const { data: followingData } = useQuery(GET_USER_FOLLOWING, {
+    variables: { username: params.username },
+    skip: !params.username,
+  });
+
+  console.log("followingData", followingData);
+  console.log("followersData", followersData);
+
   React.useEffect(() => {
     console.log("sup profileData", profileData);
     if (!profileLoading && profileData.user.length === 0) {
@@ -864,6 +899,35 @@ export default function Page() {
   }, [user?.username, params.username]);
   const currentTab = validTabs.includes(tab || "") ? tab : "overview";
 
+  const [followUser] = useMutation(FOLLOW_USER);
+  const [unfollowUser] = useMutation(UNFOLLOW_USER);
+
+  const handleFollowToggle = async () => {
+    try {
+      if (profileData?.user[0].isFollowedByMe) {
+        await unfollowUser({
+          variables: { username: params.username },
+          refetchQueries: [
+            "GetUserProfile",
+            "GetUserFollowers",
+            "GetUserFollowing",
+          ],
+        });
+      } else {
+        await followUser({
+          variables: { username: params.username },
+          refetchQueries: [
+            "GetUserProfile",
+            "GetUserFollowers",
+            "GetUserFollowing",
+          ],
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+    }
+  };
+
   if (profileLoading || !profileData || profileData.user.length === 0)
     return null;
 
@@ -899,8 +963,8 @@ export default function Page() {
           </p>
         </div>
         <div className="flex flex-row gap-2 w-full">
-          {isOwnProfile &&
-            (isEditing ? (
+          {isOwnProfile ? (
+            isEditing ? (
               <div className="flex gap-2 w-full">
                 <Button
                   variant="default"
@@ -925,7 +989,22 @@ export default function Page() {
               >
                 Edit profile
               </Button>
-            ))}
+            )
+          ) : (
+            <div className="flex flex-row gap-2 w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleFollowToggle}
+                disabled={!user || user.username === params.username}
+              >
+                {profileData?.user[0].isFollowedByMe ? "Unfollow" : "Follow"}
+              </Button>
+              <Button color="pink" variant={"outline"}>
+                Sponsor 💖
+              </Button>
+            </div>
+          )}
         </div>
         {isEditing ? (
           <Textarea
@@ -939,8 +1018,16 @@ export default function Page() {
         )}
         <div className="flex items-center text-sm text-muted-foreground">
           <Users className="mr-2 h-4 w-4" />
-          <span className="mr-4">100 followers</span>
-          <span>50 following</span>
+          <FollowersModal
+            users={followersData?.user[0]?.followers || []}
+            count={profileData?.user[0].followersCount || 0}
+            type="followers"
+          />
+          <FollowersModal
+            users={followingData?.user[0]?.following || []}
+            count={profileData?.user[0].followingCount || 0}
+            type="following"
+          />
         </div>
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center">
@@ -1157,11 +1244,14 @@ export default function Page() {
                   </CardContent>
                 </Card>
               ))}
+              {repositories.length === 0 && (
+                <EmptyRepositories pinned={true} isOwnProfile={isOwnProfile} />
+              )}
             </div>
 
-            <div className="mt-6 overflow-x-auto">
+            {/* <div className="mt-6 overflow-x-auto">
               <ContributionCalendar />
-            </div>
+            </div> */}
           </TabsContent>
           <TabsContent value="repositories">
             <div className="flex flex-col sm:flex-row items-center mb-4 gap-2">
@@ -1238,6 +1328,7 @@ export default function Page() {
                 repositories={filteredStarredRepositories}
                 isOwnProfile={isOwnProfile}
                 username={(params.username ?? "") as string}
+                starTab={true}
               />
             )}
           </TabsContent>
