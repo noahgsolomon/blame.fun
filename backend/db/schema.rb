@@ -10,7 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_11_15_001549) do
+ActiveRecord::Schema[8.0].define(version: 2024_11_16_014456) do
+  create_table "follows", force: :cascade do |t|
+    t.integer "follower_id", null: false
+    t.integer "followed_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["followed_id"], name: "index_follows_on_followed_id"
+    t.index ["follower_id", "followed_id"], name: "index_follows_on_follower_id_and_followed_id", unique: true
+    t.index ["follower_id"], name: "index_follows_on_follower_id"
+  end
+
   create_table "repositories", force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -37,7 +47,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_11_15_001549) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "image"
     t.string "email", null: false
     t.string "password_digest"
     t.string "username", null: false
@@ -51,6 +60,8 @@ ActiveRecord::Schema[8.0].define(version: 2024_11_15_001549) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "follows", "users", column: "followed_id"
+  add_foreign_key "follows", "users", column: "follower_id"
   add_foreign_key "repositories", "users"
   add_foreign_key "stars", "repositories"
   add_foreign_key "stars", "users"
